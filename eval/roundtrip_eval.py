@@ -3,7 +3,7 @@
 
 Für jeden Testfall aus dem JSONL-Testset:
   1. Text via TTS-Server synthetisieren (WAV)
-  2. WAV via STT (granite-speech auf vLLM, chat/completions + <|audio|>)
+  2. WAV via STT (granite-speech auf vLLM, /v1/audio/transcriptions)
      transkribieren
   3. Transkript gegen die erwarteten Verbalisierungen (refs) vergleichen –
      gewertet wird die beste (niedrigste) WER über alle refs
@@ -20,7 +20,6 @@ Aufruf:
 from __future__ import annotations
 
 import argparse
-import base64
 import json
 import re
 import sys
@@ -31,7 +30,6 @@ from pathlib import Path
 import requests
 
 STT_MODEL_HINT = "granite-speech"
-STT_PROMPT = "<|audio|>Transkribiere die Audioaufnahme wortgetreu auf Deutsch."
 
 
 # ── Textnormalisierung für den Vergleich ─────────────────────────────────────
@@ -89,25 +87,15 @@ def stt_model_id(stt_url: str) -> str:
 
 
 def transcribe(stt_url: str, model_id: str, wav: bytes, timeout: int = 300) -> str:
-    b64 = base64.b64encode(wav).decode()
+    """ASR über den validierten /v1/audio/transcriptions-Endpunkt."""
     r = requests.post(
-        f"{stt_url}/v1/chat/completions",
-        json={
-            "model": model_id,
-            "temperature": 0.0,
-            "max_tokens": 512,
-            "messages": [{
-                "role": "user",
-                "content": [
-                    {"type": "audio_url", "audio_url": {"url": f"data:audio/wav;base64,{b64}"}},
-                    {"type": "text", "text": STT_PROMPT},
-                ],
-            }],
-        },
+        f"{stt_url}/v1/audio/transcriptions",
+        files={"file": ("audio.wav", wav, "audio/wav")},
+        data={"model": model_id, "language": "de", "temperature": "0.0"},
         timeout=timeout,
     )
     r.raise_for_status()
-    return r.json()["choices"][0]["message"]["content"].strip()
+    return r.json()["text"].strip()
 
 
 # ── Hauptlauf ────────────────────────────────────────────────────────────────
