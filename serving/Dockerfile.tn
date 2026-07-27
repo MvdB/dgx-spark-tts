@@ -1,0 +1,14 @@
+# Stufe 2: deutsche Text-Normalisierung nachruesten.
+# Basis ist das fertige spark-magpie-tts:v1. pynini gibt es fuer aarch64 nicht
+# als Wheel; es wird einmalig gegen selbstgebautes OpenFst 1.8.3 kompiliert
+# (siehe README) — hier kommen nur die Artefakte rein:
+#   build-ctx/openfst-1.8.3-runtime.tar.gz  (Laufzeit-Libs, entpackt nach /usr/local)
+#   build-ctx/wheels/pynini-2.1.6.post1-*.whl
+FROM spark-magpie-tts:v1
+
+ADD openfst-1.8.3-runtime.tar.gz /usr/local/
+COPY wheels/pynini-2.1.6.post1-*.whl /tmp/wheels/
+RUN ldconfig \
+    && pip install --no-cache-dir /tmp/wheels/pynini-2.1.6.post1-*.whl \
+    && pip install --no-cache-dir nemo_text_processing \
+    && rm -rf /tmp/wheels

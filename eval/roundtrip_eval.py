@@ -108,11 +108,15 @@ def main() -> int:
     ap.add_argument("--voice", default="sofia")
     ap.add_argument("--out", required=True, help="Ergebnisverzeichnis")
     ap.add_argument("--limit", type=int, default=0, help="Nur erste N Fälle (Smoke)")
+    ap.add_argument("--category", default="", help="Nur diese Kategorie(n), kommagetrennt")
     args = ap.parse_args()
 
     out = Path(args.out)
     (out / "audio").mkdir(parents=True, exist_ok=True)
     cases = [json.loads(l) for l in Path(args.testset).read_text(encoding="utf-8").splitlines() if l.strip()]
+    if args.category:
+        wanted = {c.strip() for c in args.category.split(",")}
+        cases = [c for c in cases if c["category"] in wanted]
     if args.limit:
         cases = cases[: args.limit]
 
