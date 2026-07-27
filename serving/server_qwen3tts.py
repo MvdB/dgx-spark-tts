@@ -33,6 +33,16 @@ MODEL_PATH = os.environ.get(
 )
 ATTN_IMPL = os.environ.get("QWEN_TTS_ATTN", "sdpa")  # flash_attention_2 wenn verfügbar
 
+# VoiceDesign-Modelle haben keine festen Sprecher — die Stimme wird per
+# instruct-Beschreibung entworfen. Default: deutsche Muttersprachlerin.
+VOICE_DESIGN_MODE = "voicedesign" in MODEL_PATH.lower().replace("-", "")
+DEFAULT_VOICE_INSTRUCT = os.environ.get(
+    "QWEN_TTS_VOICE_INSTRUCT",
+    "Klare, professionelle deutsche Frauenstimme mittleren Alters. "
+    "Muttersprachliches Hochdeutsch, neutrale Nachrichtensprecher-Intonation, "
+    "praezise Artikulation.",
+)
+
 # ISO-Kürzel -> Qwen-Sprachname (Auszug; get_supported_languages liefert Namen)
 LANG_MAP = {
     "de": "German", "en": "English", "zh": "Chinese", "ja": "Japanese",
@@ -63,12 +73,16 @@ def load_model() -> None:
     from qwen_tts import Qwen3TTSModel
 
     t0 = time.time()
-    log.info("Lade Qwen3-TTS aus %s (attn=%s) ...", MODEL_PATH, ATTN_IMPL)
+    log.info("Lade Qwen3-TTS aus %s (attn=%s, voice_design=%s) ...",
+             MODEL_PATH, ATTN_IMPL, VOICE_DESIGN_MODE)
     model = Qwen3TTSModel.from_pretrained(
         MODEL_PATH, device_map="cuda:0", dtype=torch.bfloat16,
         attn_implementation=ATTN_IMPL,
     )
-    speakers = [s.lower() for s in model.get_supported_speakers()]
+    if VOICE_DESIGN_MODE:
+        speakers = ["design"]  # Pseudo-Stimme; tatsächliche Stimme kommt aus instruct
+    else:
+        speakers = [s.lower() for s in model.get_supported_speakers()]
     languages = list(model.get_supported_languages())
     log.info("Geladen in %.1fs. Sprecher: %s | Sprachen: %s",
              time.time() - t0, speakers, languages)
@@ -91,16 +105,22 @@ def speech(req: SpeechRequest) -> Response:
     if req.response_format != "wav":
         raise HTTPException(400, f"Nur 'wav' unterstützt, nicht '{req.response_format}'")
     voice = req.voice.lower()
-    if voice not in speakers:
+    if not VOICE_DESIGN_MODE and voice not in speakers:
         raise HTTPException(400, f"Unbekannte Stimme '{req.voice}'. Verfügbar: {speakers}")
     lang = LANG_MAP.get(req.language.lower(), req.language)
 
     t0 = time.time()
-    kwargs = {"instruct": req.instruct} if req.instruct else {}
     with torch.inference_mode():
-        wavs, sr = model.generate_custom_voice(
-            text=req.input, language=lang, speaker=voice.capitalize(), **kwargs
-        )
+        if VOICE_DESIGN_MODE:
+            wavs, sr = model.generate_voice_design(
+                text=req.input, language=lang,
+                instruct=req.instruct or DEFAULT_VOICE_INSTRUCT,
+            )
+        else:
+            kwargs = {"instruct": req.instruct} if req.instruct else {}
+            wavs, sr = model.generate_custom_voice(
+                text=req.input, language=lang, speaker=voice.capitalize(), **kwargs
+            )
     wall = time.time() - t0
 
     pcm = np.asarray(wavs[0], dtype=np.float32)
