@@ -3,8 +3,14 @@
 # torch ist im Basis-Image vorhanden und darf von pip nicht ersetzt werden.
 FROM nvcr.io/nvidia/pytorch:26.06-py3
 
-RUN pip install --no-cache-dir qwen-tts soundfile "fastapi>=0.110" "uvicorn[standard]>=0.29" \
-    && python3 -c "import torch; assert torch.version.cuda, 'torch wurde durch CPU-Wheel ersetzt'"
+# torchaudio gibt es nicht passend zum NGC-torch (Custom-CUDA-Build) —
+# aus dem Quelltext gegen das vorhandene torch kompilieren, DANN qwen-tts
+# (sieht torchaudio als erfüllt und zieht kein inkompatibles Wheel nach).
+RUN pip install --no-cache-dir ninja cmake \
+    && (pip install --no-cache-dir --no-build-isolation "git+https://github.com/pytorch/audio.git@v2.12.0" \
+        || pip install --no-cache-dir --no-build-isolation "git+https://github.com/pytorch/audio.git@main") \
+    && pip install --no-cache-dir qwen-tts soundfile "fastapi>=0.110" "uvicorn[standard]>=0.29" \
+    && python3 -c "import torch, torchaudio; assert torch.version.cuda; import torchaudio._extension.utils as u; u._check_cuda_version(); print('torch', torch.__version__, 'torchaudio', torchaudio.__version__)"
 
 COPY server_qwen3tts.py /opt/qwen3tts/server.py
 

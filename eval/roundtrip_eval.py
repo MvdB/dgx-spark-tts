@@ -86,16 +86,29 @@ def stt_model_id(stt_url: str) -> str:
     return models[0]["id"]
 
 
+STT_PROMPT = "transcribe the speech with proper punctuation and capitalization."
+
+
 def transcribe(stt_url: str, model_id: str, wav: bytes, timeout: int = 300) -> str:
-    """ASR über den validierten /v1/audio/transcriptions-Endpunkt."""
+    """ASR via chat/completions mit Casing-Prompt (granite-speech-4.1-2b:
+    Interpunktion + Truecasing gibt es nur über diesen Prompt, der
+    /v1/audio/transcriptions-Default liefert lowercase)."""
+    import base64
+
+    b64 = base64.b64encode(wav).decode()
     r = requests.post(
-        f"{stt_url}/v1/audio/transcriptions",
-        files={"file": ("audio.wav", wav, "audio/wav")},
-        data={"model": model_id, "language": "de", "temperature": "0.0"},
+        f"{stt_url}/v1/chat/completions",
+        json={
+            "model": model_id, "temperature": 0.0, "max_tokens": 512,
+            "messages": [{"role": "user", "content": [
+                {"type": "audio_url", "audio_url": {"url": f"data:audio/wav;base64,{b64}"}},
+                {"type": "text", "text": STT_PROMPT},
+            ]}],
+        },
         timeout=timeout,
     )
     r.raise_for_status()
-    return r.json()["text"].strip()
+    return r.json()["choices"][0]["message"]["content"].strip()
 
 
 # ── Hauptlauf ────────────────────────────────────────────────────────────────
