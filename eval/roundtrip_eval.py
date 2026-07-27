@@ -109,6 +109,8 @@ def main() -> int:
     ap.add_argument("--out", required=True, help="Ergebnisverzeichnis")
     ap.add_argument("--limit", type=int, default=0, help="Nur erste N Fälle (Smoke)")
     ap.add_argument("--category", default="", help="Nur diese Kategorie(n), kommagetrennt")
+    ap.add_argument("--repeats", type=int, default=1,
+                    help="Synthesen pro Fall (Magpie sampelt stochastisch; N>=3 für stabile Zahlen)")
     args = ap.parse_args()
 
     out = Path(args.out)
@@ -129,23 +131,38 @@ def main() -> int:
         for i, case in enumerate(cases, 1):
             row = {"id": case["id"], "category": case["category"],
                    "subcategory": case.get("subcategory"), "text": case["text"],
-                   "voice": args.voice, "error": None}
+                   "voice": args.voice, "repeats": [], "error": None}
             try:
-                t0 = time.time()
-                wav, meta = synthesize(args.tts, case["text"], args.voice)
-                (out / "audio" / f"{case['id']}.wav").write_bytes(wav)
-                transcript = transcribe(args.stt, model_id, wav)
-                hyp = normalize(transcript)
-                scored = [
-                    {"ref": ref, "wer": round(wer(hyp, normalize(ref)), 4),
-                     "cer": round(cer(hyp, normalize(ref)), 4)}
-                    for ref in case["refs"]
-                ]
-                best = min(scored, key=lambda s: s["wer"])
-                row.update(transcript=transcript, hyp_normalized=hyp,
-                           best_ref=best["ref"], wer=best["wer"], cer=best["cer"],
-                           all_refs=scored, wall_time=round(time.time() - t0, 2), **meta)
-                print(f"[{i}/{len(cases)}] {case['id']}: WER {best['wer']:.2f}  CER {best['cer']:.2f}")
+                for rep in range(args.repeats):
+                    t0 = time.time()
+                    wav, meta = synthesize(args.tts, case["text"], args.voice)
+                    suffix = f"_r{rep}" if args.repeats > 1 else ""
+                    (out / "audio" / f"{case['id']}{suffix}.wav").write_bytes(wav)
+                    transcript = transcribe(args.stt, model_id, wav)
+                    hyp = normalize(transcript)
+                    scored = [
+                        {"ref": ref, "wer": round(wer(hyp, normalize(ref)), 4),
+                         "cer": round(cer(hyp, normalize(ref)), 4)}
+                        for ref in case["refs"]
+                    ]
+                    best = min(scored, key=lambda s: s["wer"])
+                    row["repeats"].append({
+                        "transcript": transcript, "hyp_normalized": hyp,
+                        "best_ref": best["ref"], "wer": best["wer"], "cer": best["cer"],
+                        "wall_time": round(time.time() - t0, 2), **meta})
+                reps = row["repeats"]
+                # Fall-Score: Mittel über Wiederholungen; Min separat, um
+                # Modellfähigkeit von Sampling-Glück zu trennen.
+                row.update(
+                    wer=round(sum(r["wer"] for r in reps) / len(reps), 4),
+                    cer=round(sum(r["cer"] for r in reps) / len(reps), 4),
+                    wer_min=min(r["wer"] for r in reps),
+                    wer_max=max(r["wer"] for r in reps),
+                    transcript=reps[0]["transcript"],
+                    audio_duration=reps[0]["audio_duration"],
+                    synthesis_time=reps[0]["synthesis_time"])
+                spread = f" (min {row['wer_min']:.2f} / max {row['wer_max']:.2f})" if args.repeats > 1 else ""
+                print(f"[{i}/{len(cases)}] {case['id']}: WER {row['wer']:.2f}{spread}")
             except Exception as e:  # Rohdaten trotz Einzelfehler weiterschreiben
                 row["error"] = f"{type(e).__name__}: {e}"
                 print(f"[{i}/{len(cases)}] {case['id']}: FEHLER {row['error']}", file=sys.stderr)
@@ -161,9 +178,12 @@ def main() -> int:
             by_cat.setdefault(r["category"], []).append(r)
         summary = {
             "testset": args.testset, "voice": args.voice, "stt_model": model_id,
+            "n_repeats": args.repeats,
             "n_total": len(results), "n_ok": len(ok),
             "n_error": len(results) - len(ok),
             "wer_mean": round(sum(r["wer"] for r in ok) / max(len(ok), 1), 4),
+            "wer_best_mean": round(
+                sum(r.get("wer_min", r["wer"]) for r in ok) / max(len(ok), 1), 4),
             "cer_mean": round(sum(r["cer"] for r in ok) / max(len(ok), 1), 4),
             "wer_by_category": {
                 c: round(sum(r["wer"] for r in rs) / len(rs), 4)
