@@ -1,0 +1,18 @@
+# Secrets
+.env
+
+# Ergebnisse (lokal halten, nie ins Repo)
+results/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Audio-Artefakte
+*.wav
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
