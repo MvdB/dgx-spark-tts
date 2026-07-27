@@ -41,7 +41,9 @@ def build(res_dir: Path) -> Path:
  audio {{ height: 2rem; vertical-align: middle; margin: .2rem .4rem .2rem 0; }}
 </style></head><body>
 <h1>TTS-Abhörseite: {html.escape(res_dir.name)}</h1>
-<p class="meta">Stimme: {html.escape(str(summary.get("voice", "?")))} ·
+<p class="meta"><b>TTS-Modell: {html.escape(str(summary.get("tts_model", "unbekannt")))}</b> ·
+ Stimme: {html.escape(str(summary.get("voice", "?")))} ·
+ STT-Judge: {html.escape(str(summary.get("stt_model", "?")))} ·
  WER gesamt: {summary.get("wer_mean", "?")} ·
  {summary.get("n_repeats", 1)} Wiederholung(en)/Fall ·
  Rot ≥ 0.3, Orange ≥ 0.1, Grün &lt; 0.1</p>"""]

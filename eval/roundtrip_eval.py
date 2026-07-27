@@ -123,7 +123,11 @@ def main() -> int:
         cases = cases[: args.limit]
 
     model_id = stt_model_id(args.stt)
-    print(f"STT-Modell: {model_id}, {len(cases)} Testfälle, Stimme: {args.voice}")
+    try:
+        tts_model = requests.get(f"{args.tts}/health", timeout=10).json().get("model", "?")
+    except Exception:
+        tts_model = "?"
+    print(f"TTS: {tts_model} | STT: {model_id} | {len(cases)} Fälle, Stimme: {args.voice}")
 
     results = []
     raw_path = out / "results_raw.jsonl"
@@ -177,7 +181,8 @@ def main() -> int:
         for r in ok:
             by_cat.setdefault(r["category"], []).append(r)
         summary = {
-            "testset": args.testset, "voice": args.voice, "stt_model": model_id,
+            "testset": args.testset, "voice": args.voice,
+            "tts_model": tts_model, "tts_url": args.tts, "stt_model": model_id,
             "n_repeats": args.repeats,
             "n_total": len(results), "n_ok": len(ok),
             "n_error": len(results) - len(ok),
