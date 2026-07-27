@@ -1,0 +1,12 @@
+# Qwen3-TTS-Server für DGX Spark (GB10, aarch64).
+# Basis: NGC-PyTorch (torch mit sm_120/aarch64); qwen-tts von PyPI obendrauf.
+# torch ist im Basis-Image vorhanden und darf von pip nicht ersetzt werden.
+FROM nvcr.io/nvidia/pytorch:26.06-py3
+
+RUN pip install --no-cache-dir qwen-tts soundfile "fastapi>=0.110" "uvicorn[standard]>=0.29" \
+    && python3 -c "import torch; assert torch.version.cuda, 'torch wurde durch CPU-Wheel ersetzt'"
+
+COPY server_qwen3tts.py /opt/qwen3tts/server.py
+
+EXPOSE 8002
+ENTRYPOINT ["python3", "/opt/qwen3tts/server.py"]
