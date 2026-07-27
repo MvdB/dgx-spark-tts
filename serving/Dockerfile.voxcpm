@@ -1,0 +1,14 @@
+# VoxCPM2 auf DGX Spark (GB10, aarch64).
+# Basis: das Qwen3-TTS-Image (NGC-torch + Source-torchaudio vorhanden).
+# voxcpm hat lockere torch-Ranges (>=2.5) — normaler Install mit Guard.
+FROM spark-qwen3-tts:v1
+
+RUN pip install --no-cache-dir voxcpm \
+    && python3 -c "import torch, torchaudio; assert torch.version.cuda; \
+import torchaudio._extension.utils as u; u._check_cuda_version(); \
+from voxcpm import VoxCPM; print('Import OK')"
+
+COPY server_voxcpm.py /opt/voxcpm/server.py
+
+EXPOSE 8004
+ENTRYPOINT ["python3", "/opt/voxcpm/server.py"]
