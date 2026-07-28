@@ -4,9 +4,11 @@
 # teils exakt, daher --no-deps + manuelle Abhängigkeiten mit Guard.
 FROM spark-qwen3-tts:v1
 
+# pkuseg/pykakasi (zh/ja-Preprocessing) bewusst weggelassen: kein
+# aarch64-Wheel, fuer de/en nicht noetig.
 RUN pip install --no-cache-dir --no-deps chatterbox-tts \
     && pip install --no-cache-dir librosa s3tokenizer resemble-perth conformer \
-       "diffusers>=0.29" safetensors pkuseg spacy-pkuseg pykakasi \
+       "diffusers>=0.29" safetensors \
     && python3 -c "import torch, torchaudio; assert torch.version.cuda; \
 import torchaudio._extension.utils as u; u._check_cuda_version(); \
 from chatterbox.mtl_tts import ChatterboxMultilingualTTS; print('Import OK')"
