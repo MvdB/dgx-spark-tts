@@ -1,14 +1,24 @@
-# Stufe 2: deutsche Text-Normalisierung nachruesten.
-# Basis ist das fertige spark-magpie-tts:v1. pynini gibt es fuer aarch64 nicht
-# als Wheel; es wird einmalig gegen selbstgebautes OpenFst 1.8.3 kompiliert
-# (siehe README) — hier kommen nur die Artefakte rein:
-#   build-ctx/openfst-1.8.3-runtime.tar.gz  (Laufzeit-Libs, entpackt nach /usr/local)
-#   build-ctx/wheels/pynini-2.1.6.post1-*.whl
+# Stufe 2: deutsche Text-Normalisierung nachruesten — Build aus den Quellen.
+# (Ersetzt die fruehere Artefakt-Variante: die vorgebauten OpenFst-/pynini-
+# Artefakte sind verloren gegangen; dieser Build ist selbsttragend und
+# reproduzierbar, dauert auf dem GB10 aber ~30-40 min.)
+# pynini gibt es fuer aarch64 nach wie vor nicht als Wheel (Stand 2.1.7,
+# Juli 2026) — es wird gegen selbstgebautes OpenFst 1.8.3 kompiliert.
+# nemo_text_processing pinnt pynini==2.1.6.post1.
 FROM spark-magpie-tts:v1
 
-ADD openfst-1.8.3-runtime.tar.gz /usr/local/
-COPY wheels/pynini-2.1.6.post1-*.whl /tmp/wheels/
-RUN ldconfig \
-    && pip install --no-cache-dir /tmp/wheels/pynini-2.1.6.post1-*.whl \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential wget \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget -q https://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.8.3.tar.gz \
+    && tar xzf openfst-1.8.3.tar.gz && rm openfst-1.8.3.tar.gz \
+    && cd openfst-1.8.3 \
+    && ./configure --enable-grm --enable-far --enable-pdt --enable-mpdt \
+    && make -j"$(nproc)" && make install && ldconfig \
+    && cd .. && rm -rf openfst-1.8.3
+
+RUN pip install --no-cache-dir pynini==2.1.6.post1 \
     && pip install --no-cache-dir nemo_text_processing \
-    && rm -rf /tmp/wheels
+    && python3 -c "from nemo_text_processing.text_normalization.normalize import Normalizer; \
+Normalizer(input_case='cased', lang='de'); print('TN OK')"
