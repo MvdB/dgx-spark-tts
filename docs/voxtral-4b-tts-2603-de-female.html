@@ -31,36 +31,36 @@
 </style></head><body>
 <p><a href="index.html">← Übersicht</a></p>
 <h1>Voxtral-4B-TTS-2603 · de_female</h1>
-<p class="meta">Modell: mistralai/Voxtral-4B-TTS-2603 · Stimme: de_female · STT-Judge: granite-speech-4.1-2b · WER 0.183 · CER 0.168 · RTF 0.84 · Lizenz: CC BY-NC 4.0 (nicht-kommerziell) · Lauf: 2026-07-28_voxtral-4b-de_female_n3</p>
+<p class="meta">Modell: mistralai/Voxtral-4B-TTS-2603 · Stimme: de_female · STT-Judge: granite-speech-4.1-2b · WER 0.179 · CER 0.152 · RTF 1.28 · Lizenz: CC BY-NC 4.0 (nicht-kommerziell) · Lauf: 2026-07-28_suite_voxtral-de-female</p>
 <p class="meta">Je Fall ein Clip (erste von 3 Wiederholung(en)); WER ist der Mittelwert über alle Wiederholungen. Rot ≥ 0.3, Orange ≥ 0.1, Grün &lt; 0.1.</p>
-<p class="meta">Kreuzvalidiert mit Zweit-Judge voxtral-mini-3b (r0, beste WER über refs+Text): WER 0.090 (Judge 1 im selben Protokoll: 0.149).</p>
+<p class="meta">Kreuzvalidiert mit Zweit-Judge voxtral-mini-3b (r0, beste WER über refs+Text): WER 0.073 (Judge 1 im selben Protokoll: 0.168).</p>
 <h2>compound</h2>
 <div class="case bad">
  <div class="text">Die Wärmepumpenjahresarbeitszahl liegt bei vier.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/comp-006.mp3"></audio></div>
- <div class="transcript">→ Die Wärmpumpen-Jahresarbeitszahl liegt bei vier.</div>
+ <div class="transcript">→ Die Wärmpumpen-Jahres-Arbeitszahl liegt bei vier.</div>
  <div class="transcript">→ Judge 2: Die Wärmepumpenjahresarbeitszahl liegt bei 4. <span class="meta">(WER 0.20)</span></div>
- <div class="meta">comp-006 · WER 0.40</div>
+ <div class="meta">comp-006 · WER 0.47</div>
 </div>
 <div class="case mid">
  <div class="text">Der Donaudampfschifffahrtskapitän ging von Bord.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/comp-002.mp3"></audio></div>
- <div class="transcript">→ der Donaudampfschiffschiffskapitän ging von Bord.</div>
- <div class="transcript">→ Judge 2: Der Donau-Dampf-Schiffahrtskapitän ging von Bord. <span class="meta">(WER 0.60)</span></div>
+ <div class="transcript">→ der Donaudampfschiffahrtskapitän ging von Bord.</div>
+ <div class="transcript">→ Judge 2: Der Donaudampfschiffahrtskapitän ging von Bord. <span class="meta">(WER 0.20)</span></div>
  <div class="meta">comp-002 · WER 0.20</div>
 </div>
-<div class="case mid">
+<div class="case good">
  <div class="text">Die Grafikprozessoreinheit übernimmt die Bildschirmausgabe.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/comp-003.mp3"></audio></div>
- <div class="transcript">→ Die Grafikprozeßohreinheit übernimmt die Bildschirmausgabe.</div>
- <div class="transcript">→ Judge 2: Die Grafikprozessor-Einheit übernimmt die Bildschirmausgabe. <span class="meta">(WER 0.40)</span></div>
- <div class="meta">comp-003 · WER 0.20</div>
+ <div class="transcript">→ die Grafikprozessorenheit übernimmt die Bildschirmausgabe</div>
+ <div class="transcript">→ Judge 2: Die Grafikprozessorenheit übernimmt die Bildschirmausgabe. <span class="meta">(WER 0.20)</span></div>
+ <div class="meta">comp-003 · WER 0.07</div>
 </div>
 <div class="case good">
  <div class="text">Die Rechtsschutzversicherungsgesellschaften senkten ihre Beiträge.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/comp-001.mp3"></audio></div>
- <div class="transcript">→ Die Rechtsschutzversicherungsgesellschaften senkten ihre Beiträge.</div>
- <div class="transcript">→ Judge 2: Die Rechtsschutzversicherungsgesellschaften senkten ihre Beiträge. <span class="meta">(WER 0.00)</span></div>
+ <div class="transcript">→ die Rechtsschutzversicherungsgesellschaften senkten ihre Beiträge</div>
+ <div class="transcript">→ Judge 2: die Rechtsschutzversicherungsgesellschaften senkten ihre Beiträge. <span class="meta">(WER 0.00)</span></div>
  <div class="meta">comp-001 · WER 0.00</div>
 </div>
 <div class="case good">
@@ -79,18 +79,18 @@
 </div>
 <h2>loanword</h2>
 <div class="case mid">
+ <div class="text">Unser Team reviewt die Pull-Requests im Daily.</div>
+ <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/loan-004.mp3"></audio></div>
+ <div class="transcript">→ When our team reviewed the pull requests in daily,</div>
+ <div class="transcript">→ Judge 2: Unser Team reviewed die Pull Requests in daily. <span class="meta">(WER 0.25)</span></div>
+ <div class="meta">loan-004 · WER 0.29</div>
+</div>
+<div class="case mid">
  <div class="text">Zum Espresso gab es ein Stück Zucchinikuchen.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/loan-006.mp3"></audio></div>
  <div class="transcript">→ Zum Espresso gab es ein Stück Zucchini-Kuchen.</div>
  <div class="transcript">→ Judge 2: Zum Espresso gab es ein Stück Zucchini-Kuchen. <span class="meta">(WER 0.29)</span></div>
  <div class="meta">loan-006 · WER 0.24</div>
-</div>
-<div class="case mid">
- <div class="text">Unser Team reviewt die Pull-Requests im Daily.</div>
- <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/loan-004.mp3"></audio></div>
- <div class="transcript">→ Unser Team reviewed die Pull Requests im Daily.</div>
- <div class="transcript">→ Judge 2: Unser Team reviewed die Pull Requests im Daily. <span class="meta">(WER 0.12)</span></div>
- <div class="meta">loan-004 · WER 0.21</div>
 </div>
 <div class="case good">
  <div class="text">Ihr Engagement für das Ensemble war beachtlich.</div>
@@ -109,14 +109,14 @@
 <div class="case good">
  <div class="text">Das Update wird über die Cloud eingespielt.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/loan-003.mp3"></audio></div>
- <div class="transcript">→ Das update wird über die Cloud eingespielt.</div>
+ <div class="transcript">→ Das Update wird über die Cloud eingespielt.</div>
  <div class="transcript">→ Judge 2: Das Update wird über die Cloud eingespielt. <span class="meta">(WER 0.00)</span></div>
  <div class="meta">loan-003 · WER 0.00</div>
 </div>
 <div class="case good">
  <div class="text">Die Machine-Learning-Pipeline läuft auf dem neuen Server.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/loan-005.mp3"></audio></div>
- <div class="transcript">→ Die machine learning pipeline läuft auf dem neuen Server</div>
+ <div class="transcript">→ Die machine learning pipeline läuft auf dem neuen Server.</div>
  <div class="transcript">→ Judge 2: Die Machine Learning Pipeline läuft auf dem neuen Server. <span class="meta">(WER 0.00)</span></div>
  <div class="meta">loan-005 · WER 0.00</div>
 </div>
@@ -124,16 +124,9 @@
 <div class="case mid">
  <div class="text">Für das Rezept brauchen Sie 250 g Mehl, 3 Eier, 125 ml Milch, eine Prise Salz und 2 EL Zucker.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/long-002.mp3"></audio></div>
- <div class="transcript">→ Für das Rezept brauchen Sie Gramm Mehl, drei Eier, Milliliter Milch, eine Prise Salz und zwei Eel Zucker.</div>
- <div class="transcript">→ Judge 2: Für das Rezept brauchen Sie 250 g Mehl, 3 Eier, 125 ml Milch, eine Prise Salz und 2 EL Zucker. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">long-002 · WER 0.20</div>
-</div>
-<div class="case good">
- <div class="text">„Kommen Sie herein“, sagte sie, „und schließen Sie bitte die Tür.“</div>
- <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/long-004.mp3"></audio></div>
- <div class="transcript">→ &quot;Come in,&quot; sagte sie, &quot;und schließen Sie bitte die Tür.&quot;</div>
- <div class="transcript">→ Judge 2: &quot;Kommen Sie herein,&quot; sagte sie, &quot;und schließen Sie bitte die Tür.&quot; <span class="meta">(WER 0.00)</span></div>
- <div class="meta">long-004 · WER 0.09</div>
+ <div class="transcript">→ für das Rezept brauchen Sie 250 Gramm Mehl, 3 Eier, 125 Milliliter Milch, eine prise Salz und 2 Eierl. Zucker.</div>
+ <div class="transcript">→ Judge 2: Für das Rezept brauchen Sie 250 g Mehl, 3 Eier, 125 ml Milch, eine Prise Salz und 2 ERL Zucker. <span class="meta">(WER 0.05)</span></div>
+ <div class="meta">long-002 · WER 0.23</div>
 </div>
 <div class="case good">
  <div class="text">Obwohl die Ergebnisse, die das Team nach monatelanger Arbeit vorgelegt hatte, überzeugend waren, entschied sich der Vorstand, der seit Jahren auf Sicherheit bedacht war, gegen das Projekt.</div>
@@ -149,63 +142,70 @@
  <div class="transcript">→ Judge 2: Haben Sie die Unterlagen erhalten? Falls nicht, senden wir sie erneut. Bestätigen Sie bitte den Empfang. <span class="meta">(WER 0.00)</span></div>
  <div class="meta">long-003 · WER 0.00</div>
 </div>
+<div class="case good">
+ <div class="text">„Kommen Sie herein“, sagte sie, „und schließen Sie bitte die Tür.“</div>
+ <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/long-004.mp3"></audio></div>
+ <div class="transcript">→ &quot;Kommen Sie herein,&quot; sagte sie, &quot;und schließen Sie bitte die Tür.&quot;</div>
+ <div class="transcript">→ Judge 2: &quot;Kommen Sie herein,&quot; sagte sie, &quot;und schließen Sie bitte die Tür.&quot; <span class="meta">(WER 0.00)</span></div>
+ <div class="meta">long-004 · WER 0.00</div>
+</div>
 <h2>names</h2>
 <div class="case mid">
  <div class="text">Herr Nguyen und Frau Kowalczyk leiten die Abteilung gemeinsam.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/name-003.mp3"></audio></div>
- <div class="transcript">→ Herrn Guen und Frau Kowalschik leiten die Abteilung gemeinsam.</div>
- <div class="transcript">→ Judge 2: Herrn Guian und Frau Kowalczyk leiten die Abteilung gemeinsam. <span class="meta">(WER 0.22)</span></div>
+ <div class="transcript">→ herr Negien und frau Kowalschik leiten die Abteilung gemeinsam.</div>
+ <div class="transcript">→ Judge 2: Herr Negien und Frau Kowalschik leiten die Abteilung gemeinsam. <span class="meta">(WER 0.22)</span></div>
  <div class="meta">name-003 · WER 0.22</div>
 </div>
 <div class="case good">
  <div class="text">Der ICE hält in Fürth, Würzburg und Bietigheim-Bissingen.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/name-001.mp3"></audio></div>
- <div class="transcript">→ der I.C.E. hält in Fürth, Würzburg und Bietigheim-Bissingen</div>
+ <div class="transcript">→ der ICE hält in Fürth, Würzburg und Bietigheim-Bissingen.</div>
  <div class="transcript">→ Judge 2: Der ICE hält in Fürth, Würzburg und Bietigheim-Bissingen. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">name-001 · WER 0.00</div>
+ <div class="meta">name-001 · WER 0.03</div>
 </div>
 <div class="case good">
  <div class="text">Die Konferenz findet abwechselnd in Zürich, Straßburg und Kopenhagen statt.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/name-002.mp3"></audio></div>
- <div class="transcript">→ die Konferenz findet abwechselnd in Zürich, Straßburg und Kopenhagen statt.</div>
+ <div class="transcript">→ Die Konferenz findet abwechselnd in Zürich, Straßburg und Kopenhagen statt.</div>
  <div class="transcript">→ Judge 2: Die Konferenz findet abwechselnd in Zürich, Straßburg und Kopenhagen statt. <span class="meta">(WER 0.00)</span></div>
  <div class="meta">name-002 · WER 0.00</div>
 </div>
 <h2>normalization</h2>
 <div class="case bad">
- <div class="text">Das regelt § 12 Abs. 3 BGB.</div>
- <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-011.mp3"></audio></div>
- <div class="transcript">→ Es regelt Absatz 3 BGB.</div>
- <div class="transcript">→ Judge 2: Das regelt § 12 Absatz 3 BGB. <span class="meta">(WER 0.17)</span></div>
- <div class="meta">norm-011 · WER 0.70</div>
-</div>
-<div class="case bad">
  <div class="text">Sie erreichen uns unter 0511 123456.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-007.mp3"></audio></div>
- <div class="transcript">→ sie erreichen uns unter</div>
- <div class="transcript">→ Judge 2: Sie erreichen uns unter 0511 123 456. <span class="meta">(WER 0.33)</span></div>
+ <div class="transcript">→ Sie erreichen uns unter</div>
+ <div class="transcript">→ Judge 2: Sie erreichen uns unter 0511 123456 <span class="meta">(WER 0.00)</span></div>
  <div class="meta">norm-007 · WER 0.69</div>
 </div>
 <div class="case bad">
- <div class="text">Der Motor leistet 150 kW bei 4.500 U/min.</div>
- <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-012.mp3"></audio></div>
- <div class="transcript">→ der Motor leistet 550 kW bei 500 U.</div>
- <div class="transcript">→ Judge 2: Der Motor leistet 150 kW bei 4500 Upm. <span class="meta">(WER 0.40)</span></div>
- <div class="meta">norm-012 · WER 0.60</div>
-</div>
-<div class="case bad">
- <div class="text">Wir liefern u. a. Ersatzteile, z. B. Filter.</div>
- <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-009.mp3"></audio></div>
- <div class="transcript">→ Hier liefern U A Ersatzteile, Z B Filter.</div>
- <div class="transcript">→ Judge 2: Wir liefern UA Ersatzteile, ZB Filter. <span class="meta">(WER 0.50)</span></div>
- <div class="meta">norm-009 · WER 0.54</div>
+ <div class="text">Das regelt § 12 Abs. 3 BGB.</div>
+ <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-011.mp3"></audio></div>
+ <div class="transcript">→ das regelt Absatz</div>
+ <div class="transcript">→ Judge 2: Das regelt § 12 Abs. 3 BGB. <span class="meta">(WER 0.00)</span></div>
+ <div class="meta">norm-011 · WER 0.67</div>
 </div>
 <div class="case bad">
  <div class="text">Die Sitzung dauert von 9:00 bis 10:30 Uhr.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-006.mp3"></audio></div>
  <div class="transcript">→ Die Sitzung dauert von</div>
- <div class="transcript">→ Judge 2: Die Sitzung dauert von 9 bis 10.30 Uhr. <span class="meta">(WER 0.10)</span></div>
- <div class="meta">norm-006 · WER 0.52</div>
+ <div class="transcript">→ Judge 2: Die Sitzung dauert von 9:00 bis 10:30. <span class="meta">(WER 0.10)</span></div>
+ <div class="meta">norm-006 · WER 0.56</div>
+</div>
+<div class="case bad">
+ <div class="text">Wir liefern u. a. Ersatzteile, z. B. Filter.</div>
+ <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-009.mp3"></audio></div>
+ <div class="transcript">→ Wir liefern u, a, ersatzteile, z, b, Filter,</div>
+ <div class="transcript">→ Judge 2: Wir liefern UA Ersatzteile, ZB Filter, <span class="meta">(WER 0.50)</span></div>
+ <div class="meta">norm-009 · WER 0.50</div>
+</div>
+<div class="case bad">
+ <div class="text">Der Motor leistet 150 kW bei 4.500 U/min.</div>
+ <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-012.mp3"></audio></div>
+ <div class="transcript">→ Der Motor leistet hundertfünfzig kW bei</div>
+ <div class="transcript">→ Judge 2: Der Motor leistet 150 kW bei 4500 Upmint. <span class="meta">(WER 0.40)</span></div>
+ <div class="meta">norm-012 · WER 0.50</div>
 </div>
 <div class="case bad">
  <div class="text">Der Schaden beläuft sich auf 1.250.000 Euro.</div>
@@ -224,16 +224,23 @@
 <div class="case bad">
  <div class="text">Dr. Weber wohnt in der Hauptstr. 5.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-008.mp3"></audio></div>
- <div class="transcript">→ Dr. Weber wohnt in der Hauptstre.</div>
+ <div class="transcript">→ Dr. Weber wohnt in der Hauptstr.</div>
  <div class="transcript">→ Judge 2: Dr. Weber wohnt in der Hauptstr. 5. <span class="meta">(WER 0.00)</span></div>
  <div class="meta">norm-008 · WER 0.43</div>
 </div>
 <div class="case bad">
+ <div class="text">Die Quote stieg um 4,5 %.</div>
+ <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-015.mp3"></audio></div>
+ <div class="transcript">→ Die Quote stieg um viereinhalb Prozent.</div>
+ <div class="transcript">→ Judge 2: Die Quote stieg um 4,5 %. <span class="meta">(WER 0.00)</span></div>
+ <div class="meta">norm-015 · WER 0.33</div>
+</div>
+<div class="case mid">
  <div class="text">Der Zug fährt um 17:45 Uhr.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-005.mp3"></audio></div>
  <div class="transcript">→ der Zug fährt um</div>
  <div class="transcript">→ Judge 2: Der Zug fährt um 17:45. <span class="meta">(WER 0.14)</span></div>
- <div class="meta">norm-005 · WER 0.38</div>
+ <div class="meta">norm-005 · WER 0.24</div>
 </div>
 <div class="case mid">
  <div class="text">Karl V. regierte im 16. Jahrhundert.</div>
@@ -243,46 +250,39 @@
  <div class="meta">norm-017 · WER 0.24</div>
 </div>
 <div class="case mid">
- <div class="text">Die Quote stieg um 4,5 %.</div>
- <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-015.mp3"></audio></div>
- <div class="transcript">→ Die Quote stieg um vier fünf Prozent.</div>
- <div class="transcript">→ Judge 2: Die Quote stieg um 4,5 %. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">norm-015 · WER 0.21</div>
+ <div class="text">Die Müller GmbH &amp; Co. KG hat ihren Sitz in Hannover.</div>
+ <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-010.mp3"></audio></div>
+ <div class="transcript">→ die Müller Gmbh und Co. K. G. hat ihren Sitz in Hannover.</div>
+ <div class="transcript">→ Judge 2: Die Müller GmbH und Co. KG hat ihren Sitz in Hannover. <span class="meta">(WER 0.00)</span></div>
+ <div class="meta">norm-010 · WER 0.21</div>
 </div>
 <div class="case mid">
  <div class="text">Das Gebäude stammt aus dem Jahr 1897.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-016.mp3"></audio></div>
- <div class="transcript">→ Das Gebäude stammt aus dem</div>
+ <div class="transcript">→ Das Gebäude stammt aus dem Jahr</div>
  <div class="transcript">→ Judge 2: Das Gebäude stammt aus dem Jahr 1897. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">norm-016 · WER 0.19</div>
-</div>
-<div class="case mid">
- <div class="text">Die Müller GmbH &amp; Co. KG hat ihren Sitz in Hannover.</div>
- <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-010.mp3"></audio></div>
- <div class="transcript">→ die Müller Gmbh und Ko. KG hat ihren Sitz in Hannover.</div>
- <div class="transcript">→ Judge 2: Die Müller GmbH und Co. KG hat ihren Sitz in Hannover. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">norm-010 · WER 0.18</div>
-</div>
-<div class="case mid">
- <div class="text">Am 3. Oktober ist Feiertag.</div>
- <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-004.mp3"></audio></div>
- <div class="transcript">→ Am 3. Oktober ist Feiertag.</div>
- <div class="transcript">→ Judge 2: Am 3. Oktober ist Feiertag. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">norm-004 · WER 0.13</div>
+ <div class="meta">norm-016 · WER 0.14</div>
 </div>
 <div class="case mid">
  <div class="text">Ein Dreiviertel der Belegschaft stimmte zu, also 3/4.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-018.mp3"></audio></div>
- <div class="transcript">→ Ein dreiviertel der Belegschaft stimmte zu, also</div>
+ <div class="transcript">→ Ein dreiviertel der Belegschaft stimmte zu. Also dreivier</div>
  <div class="transcript">→ Judge 2: Ein Dreiviertel der Belegschaft stimmte zu, also 3:4. <span class="meta">(WER 0.00)</span></div>
  <div class="meta">norm-018 · WER 0.12</div>
 </div>
-<div class="case good">
+<div class="case mid">
  <div class="text">Das Gerät kostet 3,50 €.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-001.mp3"></audio></div>
- <div class="transcript">→ Das Gerät kostet drei Euro fünfzig Neun.</div>
- <div class="transcript">→ Judge 2: Das Gerät kostet 3,50 €. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">norm-001 · WER 0.06</div>
+ <div class="transcript">→ Das Gerät kostet drei Eurofünfzig.</div>
+ <div class="transcript">→ Judge 2: Das Gerät kostet 3,50 Euro. <span class="meta">(WER 0.20)</span></div>
+ <div class="meta">norm-001 · WER 0.11</div>
+</div>
+<div class="case good">
+ <div class="text">Am 3. Oktober ist Feiertag.</div>
+ <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/norm-004.mp3"></audio></div>
+ <div class="transcript">→ Am 3. Oktober ist Feiertag.</div>
+ <div class="transcript">→ Judge 2: Am 3. Oktober ist Feiertag. <span class="meta">(WER 0.00)</span></div>
+ <div class="meta">norm-004 · WER 0.07</div>
 </div>
 <div class="case good">
  <div class="text">Die Strecke ist 12,7 km lang.</div>
@@ -309,30 +309,30 @@
 <div class="case good">
  <div class="text">Er trank die Maß Helles in Maßen.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/uml-006.mp3"></audio></div>
- <div class="transcript">→ Er trank die maß Helles in Maßen.</div>
+ <div class="transcript">→ Er trank die Maß Helles in Maßen.</div>
  <div class="transcript">→ Judge 2: Er trank die Maß Helles in Maßen. <span class="meta">(WER 0.00)</span></div>
  <div class="meta">uml-006 · WER 0.10</div>
-</div>
-<div class="case good">
- <div class="text">Schon am Morgen war es schön warm.</div>
- <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/uml-001.mp3"></audio></div>
- <div class="transcript">→ Schon am Morgen war es schön warm.</div>
- <div class="transcript">→ Judge 2: Schon am Morgen war es schön warm. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">uml-001 · WER 0.05</div>
 </div>
 <div class="case good">
  <div class="text">Sie drücken den Knopf, dann drucken wir das Dokument.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/uml-002.mp3"></audio></div>
  <div class="transcript">→ Sie drücken den Knopf, dann drucken wir das Dokument.</div>
  <div class="transcript">→ Judge 2: Sie drücken den Knopf, dann drucken wir das Dokument. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">uml-002 · WER 0.00</div>
+ <div class="meta">uml-002 · WER 0.04</div>
 </div>
 <div class="case good">
  <div class="text">In der Höhle war es dunkel wie in der Hölle.</div>
  <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/uml-003.mp3"></audio></div>
- <div class="transcript">→ In der Höhle war es dunkel wie in der Hölle.</div>
+ <div class="transcript">→ In der Höhle war es dunkel wie in der Höhle.</div>
  <div class="transcript">→ Judge 2: In der Höhle war es dunkel wie in der Hölle. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">uml-003 · WER 0.00</div>
+ <div class="meta">uml-003 · WER 0.03</div>
+</div>
+<div class="case good">
+ <div class="text">Schon am Morgen war es schön warm.</div>
+ <div><audio controls preload="none" src="audio/voxtral-4b-tts-2603-de-female/uml-001.mp3"></audio></div>
+ <div class="transcript">→ Schon am Morgen war es schön warm.</div>
+ <div class="transcript">→ Judge 2: Schon am Morgen war es schön warm. <span class="meta">(WER 0.00)</span></div>
+ <div class="meta">uml-001 · WER 0.00</div>
 </div>
 <div class="case good">
  <div class="text">Die Mütter besuchten ihre Mutter.</div>

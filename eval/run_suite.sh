@@ -40,6 +40,11 @@ run_config() { # name port voice
   fi
 }
 
+# Ausgangszustand: KEIN TTS-Container darf laufen (Unified Memory —
+# granite-Judge + Zweit-Judge + ein TTS passen, mehr nicht).
+log "stoppe evtl. laufende TTS-Container"
+docker stop qwen3-tts chatterbox-tts voxcpm2 voxtral-tts magpie-tts >> "$LOG" 2>&1 || true
+
 # TN-Image parallel bauen (wird erst fuer die letzte Konfiguration gebraucht)
 log "TN-Image-Build startet im Hintergrund"
 ( cd serving && docker build -t spark-magpie-tts:v1-tn -f Dockerfile.tn . \

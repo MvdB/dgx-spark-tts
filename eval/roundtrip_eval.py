@@ -158,7 +158,12 @@ def main() -> int:
     model_id = stt_model_id(args.stt)
     tts_payload_model = None  # nur native OpenAI-Endpoints (vLLM-Omni) brauchen 'model'
     try:
-        tts_model = requests.get(f"{args.tts}/health", timeout=10).json().get("model", "?")
+        h = requests.get(f"{args.tts}/health", timeout=10).json()
+        tts_model = h.get("model", "?")
+        # Magpie mit/ohne TN-Layer ist derselbe Checkpoint — der Suffix haelt
+        # die beiden Konfigurationen in (tts_model, voice)-Vergleichen getrennt.
+        if h.get("tn"):
+            tts_model += " +TN"
     except Exception:
         try:
             tts_payload_model = requests.get(

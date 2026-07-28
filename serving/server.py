@@ -13,6 +13,7 @@ wird akzeptiert, aber nur 'wav' unterstützt (400 sonst).
 
 from __future__ import annotations
 
+import importlib.util
 import io
 import logging
 import os
@@ -36,6 +37,11 @@ SAMPLE_RATE = 22050
 
 SPEAKERS = {"aria": 0, "jason": 1, "john": 2, "leo": 3, "sofia": 4}
 LANGUAGES = {"ar", "de", "en", "es", "fr", "hi", "it", "ja", "ko", "pt", "vi", "zh"}
+
+# Ohne nemo_text_processing (nur im :v1-tn-Image enthalten) ist apply_TN ein
+# stiller No-op — der Health-Endpoint macht den Unterschied sichtbar, damit
+# der Evaluator Laeufe mit/ohne TN auseinanderhalten kann.
+HAS_TN = importlib.util.find_spec("nemo_text_processing") is not None
 
 app = FastAPI(title="magpie-tts", version="0.1.0")
 model = None
@@ -68,7 +74,7 @@ def load_model() -> None:
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok" if model is not None else "loading", "model": MODEL_PATH}
+    return {"status": "ok" if model is not None else "loading", "model": MODEL_PATH, "tn": HAS_TN}
 
 
 @app.get("/v1/voices")

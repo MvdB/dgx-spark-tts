@@ -76,7 +76,8 @@ def main() -> int:
         recs, w1s, w2s = [], [], []
         for r, wav in out_rows:
             c = testset[r["id"]]
-            t1 = r["repeats"][0]["transcript"]  # granite r0, bereits vorhanden
+            # granite-r0-Transkript liegt schon vor (altes Schema: top-level)
+            t1 = (r.get("repeats") or [r])[0].get("transcript", "")
             t2 = transcribe_file(args.stt2, model2, wav)
             w1 = best_wer(t1, c["refs"], c["text"])
             w2 = best_wer(t2, c["refs"], c["text"])
