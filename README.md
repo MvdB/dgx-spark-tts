@@ -121,13 +121,16 @@ for that category.
 ## docs/ — published comparison
 
 `docs/` holds the static comparison pages (GitHub-Pages-ready: Settings →
-Pages → branch `main`, folder `/docs`): `index.html` with the metric table
-across the curated configurations, one listening page per configuration with
-all 43 clips. Per case exactly **one** clip is published (repeat r0, MP3
-~64 kbps mono, ~7 MB total) — representative, not cherry-picked; the raw
+Pages → branch `main`, folder `/docs`): `index.html` with the metric table,
+plus **one listening page per model/voice combination** with all 43 clips.
+`results/` is scanned automatically; per combination the newest complete run
+wins — a new run of the same model/voice **overwrites** its existing page,
+pages for vanished combinations are pruned. Partial runs (smoke, `--limit`,
+`--category`) are skipped. Per case exactly **one** clip is published
+(repeat r0, MP3 ~64 kbps mono) — representative, not cherry-picked; the raw
 WAV runs stay local in `results/` (gitignored).
 
-Regenerate after a new best run (curated run list is at the top of the script):
+Regenerate after new runs:
 
 ```bash
 pip install soundfile   # needs libsndfile >= 1.2 for MP3

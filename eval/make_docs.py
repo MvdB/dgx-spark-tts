@@ -1,15 +1,23 @@
 #!/usr/bin/env python3
 """Erzeugt die statischen Vergleichsseiten unter docs/ (GitHub-Pages-tauglich).
 
-Aus den kuratierten Eval-Läufen (RUNS unten) entsteht:
-  docs/index.html          – Modellvergleich (Metriken, Kategorien, Links)
-  docs/<slug>.html         – Abhörseite pro Konfiguration (43 Clips)
-  docs/audio/<slug>/*.mp3  – je Fall EIN Clip (Wiederholung r0), MP3 statt WAV,
-                             damit das Repo klein bleibt (~3 KB/s statt ~44 KB/s)
+results/ wird automatisch gescannt und nach (TTS-Modell, Stimme) gruppiert;
+je Kombination wird der NEUESTE vollständige Lauf publiziert. Der Seitenname
+ist stabil aus Modell+Stimme abgeleitet — ein neuer Lauf derselben
+Kombination überschreibt also die bestehende Seite. Seiten/Audio zu
+Kombinationen, die es nicht mehr gibt, werden entfernt.
 
-Es wird bewusst nur r0 veröffentlicht (nicht der beste Repeat) — die Clips
-sollen repräsentativ klingen, nicht geschönt. Die WER-Angabe pro Fall ist
-der Mittelwert über alle Repeats aus results_raw.jsonl.
+Es entsteht:
+  docs/index.html          – Modellvergleich (Metriken, Kategorien, Links)
+  docs/<modell>-<stimme>.html
+  docs/audio/<modell>-<stimme>/*.mp3
+
+Je Fall EIN Clip (Wiederholung r0 — repräsentativ, nicht der beste Repeat),
+MP3 statt WAV, damit das Repo klein bleibt (~3 KB/s statt ~44 KB/s). Die
+WER-Angabe pro Fall ist der Mittelwert über alle Repeats.
+
+Unvollständige Läufe (Smoke, --limit, --category) werden übersprungen
+(weniger als MIN_CASES Fälle).
 
 Abhängigkeit: soundfile (pip install soundfile; braucht libsndfile >= 1.2 für MP3).
 
@@ -20,47 +28,25 @@ from __future__ import annotations
 
 import html
 import json
+import re
 import sys
 from pathlib import Path
 
 import soundfile as sf
 
 REPO = Path(__file__).resolve().parent.parent
+RESULTS = REPO / "results"
 DOCS = REPO / "docs"
+MIN_CASES = 40  # Testset hat 43 Fälle; alles darunter ist ein Teil-Lauf
 
-# Kuratierte Läufe (Spaltenreihenfolge = Reihenfolge hier).
-# Bei neuen Bestläufen: run-Verzeichnis austauschen, Skript neu laufen lassen.
-RUNS = [
-    {
-        "slug": "qwen-unclefu",
-        "title": "Qwen3-TTS 1.7B CustomVoice · uncle_fu",
-        "dir": "2026-07-27_qwen3tts-1.7B-unclefu_n3",
-        "license": "Apache-2.0",
-    },
-    {
-        "slug": "qwen-design-de",
-        "title": "Qwen3-TTS 1.7B VoiceDesign · deutsche Beschreibung",
-        "dir": "2026-07-27_qwen3tts-1.7B-voicedesign-de_n3",
-        "license": "Apache-2.0",
-    },
-    {
-        "slug": "voxcpm2-design-de",
-        "title": "VoxCPM2 · Voice-Design deutsch",
-        "dir": "2026-07-28_voxcpm2-design-de_n3",
-        "license": "Apache-2.0",
-    },
-    {
-        "slug": "chatterbox-de-f1",
-        "title": "Chatterbox Multilingual V3 · Referenzstimme de_f1",
-        "dir": "2026-07-28_chatterbox-v3-de_f1_n3",
-        "license": "MIT (Audio enthält Perth-Wasserzeichen)",
-    },
-    {
-        "slug": "magpie-tn",
-        "title": "MagpieTTS 357M + deutsche TN · sofia",
-        "dir": "2026-07-27_sofia_v4-tn-n3",
-        "license": "NVIDIA Open Model License",
-    },
+# Lizenz-Kurzhinweis je Modell (Substring-Match auf tts_model) — Hinweise,
+# keine Rechtsberatung; verbindlich sind die Lizenztexte der Anbieter.
+LICENSES = [
+    ("chatterbox", "MIT (Audio enthält Perth-Wasserzeichen)"),
+    ("Qwen", "Apache-2.0"),
+    ("VoxCPM", "Apache-2.0"),
+    ("magpie", "NVIDIA Open Model License"),
+    ("Voxtral", "CC BY-NC 4.0 (nicht-kommerziell)"),
 ]
 
 DISCLAIMER = (
@@ -70,11 +56,12 @@ DISCLAIMER = (
 )
 
 CSS = """
- body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 70rem;
+ body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 80rem;
         padding: 0 1rem; color: #1a1a1a; background: #fff; }
  a { color: #1a6fb5; }
  h2 { border-bottom: 2px solid #ccc; padding-bottom: .3rem; margin-top: 2.5rem; }
- table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+ .tablewrap { overflow-x: auto; }
+ table { border-collapse: collapse; margin: 1rem 0; }
  th, td { border: 1px solid #ccc; padding: .35rem .6rem; text-align: right; }
  th:first-child, td:first-child { text-align: left; }
  td.best { font-weight: 700; background: #eaf6ea; }
@@ -105,12 +92,57 @@ def page(title: str, body: str) -> str:
             f"{body}\n<footer>{html.escape(DISCLAIMER)}</footer></body></html>")
 
 
-def load_run(run: dict) -> dict:
-    res_dir = REPO / "results" / run["dir"]
-    summary = json.loads((res_dir / "summary.json").read_text(encoding="utf-8"))
-    rows = [json.loads(l)
-            for l in (res_dir / "results_raw.jsonl").read_text(encoding="utf-8").splitlines()]
-    return {**run, "res_dir": res_dir, "summary": summary, "rows": rows}
+def model_display(tts_model: str) -> str:
+    """'/hf_models/Qwen--Qwen3-TTS-…' → 'Qwen3-TTS-…'; Pfad/Vendor-Präfix weg."""
+    base = tts_model.rstrip("/").rsplit("/", 1)[-1]
+    if "--" in base:
+        base = base.split("--", 1)[1]
+    return base
+
+
+def slugify(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+
+
+def license_note(tts_model: str) -> str:
+    for needle, note in LICENSES:
+        if needle.lower() in tts_model.lower():
+            return note
+    return "unbekannt — Modellkarte prüfen"
+
+
+def run_date(res_dir: Path) -> tuple[str, float]:
+    """Sortierschlüssel 'neuester Lauf': Datums-Präfix, Gleichstand per mtime."""
+    m = re.match(r"\d{4}-\d{2}-\d{2}", res_dir.name)
+    return (m.group(0) if m else "", res_dir.stat().st_mtime)
+
+
+def discover_runs() -> list[dict]:
+    """Neuester vollständiger Lauf je (tts_model, voice), sortiert nach WER."""
+    by_combo: dict[tuple, dict] = {}
+    for d in sorted(RESULTS.iterdir()):
+        sfile = d / "summary.json"
+        if not sfile.exists():
+            continue
+        s = json.loads(sfile.read_text(encoding="utf-8"))
+        if s.get("n_ok", 0) < MIN_CASES:
+            print(f"übersprungen (Teil-Lauf, n_ok={s.get('n_ok')}): {d.name}")
+            continue
+        combo = (s["tts_model"], s["voice"])
+        prev = by_combo.get(combo)
+        if prev and run_date(prev["res_dir"]) >= run_date(d):
+            continue
+        disp = model_display(s["tts_model"])
+        by_combo[combo] = {
+            "res_dir": d,
+            "summary": s,
+            "slug": f"{slugify(disp)}-{slugify(str(s['voice']))}",
+            "title": f"{disp} · {s['voice']}",
+            "license": license_note(s["tts_model"]),
+            "rows": [json.loads(l) for l in
+                     (d / "results_raw.jsonl").read_text(encoding="utf-8").splitlines()],
+        }
+    return sorted(by_combo.values(), key=lambda r: r["summary"].get("wer_mean") or 9)
 
 
 def encode_clips(run: dict) -> int:
@@ -134,18 +166,24 @@ def encode_clips(run: dict) -> int:
     return total
 
 
+def fmt(v, digits: int = 3) -> str:
+    return f"{v:.{digits}f}" if isinstance(v, (int, float)) else "–"
+
+
 def model_page(run: dict) -> None:
     s = run["summary"]
-    parts = [f'<p><a href="index.html">← Übersicht</a></p>',
+    parts = ['<p><a href="index.html">← Übersicht</a></p>',
              f"<h1>{html.escape(run['title'])}</h1>",
              f'<p class="meta">Modell: {html.escape(str(s["tts_model"]))} · '
              f'Stimme: {html.escape(str(s["voice"]))} · '
-             f'STT-Judge: {html.escape(str(s["stt_model"]))} · '
-             f'WER {s["wer_mean"]:.3f} · CER {s["cer_mean"]:.3f} · RTF {s["rtf_mean"]:.2f} · '
-             f'Lizenz: {html.escape(run["license"])}</p>',
+             f'STT-Judge: {html.escape(str(s.get("stt_model", "?")))} · '
+             f'WER {fmt(s.get("wer_mean"))} · CER {fmt(s.get("cer_mean"))} · '
+             f'RTF {fmt(s.get("rtf_mean"), 2)} · '
+             f'Lizenz: {html.escape(run["license"])} · '
+             f'Lauf: {html.escape(run["res_dir"].name)}</p>',
              '<p class="meta">Je Fall ein Clip (erste von '
-             f'{s["n_repeats"]} Wiederholungen); WER ist der Mittelwert über alle '
-             'Wiederholungen. Rot ≥ 0.3, Orange ≥ 0.1, Grün &lt; 0.1.</p>']
+             f'{s.get("n_repeats", 1)} Wiederholung(en)); WER ist der Mittelwert über '
+             'alle Wiederholungen. Rot ≥ 0.3, Orange ≥ 0.1, Grün &lt; 0.1.</p>']
 
     by_cat: dict[str, list] = {}
     for r in run["rows"]:
@@ -170,21 +208,26 @@ def model_page(run: dict) -> None:
 
 
 def index_page(runs: list[dict]) -> None:
-    cats = sorted({c for run in runs for c in run["summary"]["wer_by_category"]})
-    metrics = ([("WER (Mittel)", lambda s: s["wer_mean"]),
-                ("WER (best-of-N)", lambda s: s["wer_best_mean"]),
-                ("CER", lambda s: s["cer_mean"]),
-                ("Realtime-Faktor", lambda s: s["rtf_mean"])] +
-               [(f"WER {c}", lambda s, c=c: s["wer_by_category"].get(c)) for c in cats])
+    cats = sorted({c for run in runs
+                   for c in (run["summary"].get("wer_by_category") or {})})
+    metrics = ([("WER (Mittel)", lambda s: s.get("wer_mean")),
+                ("WER (best-of-N)", lambda s: s.get("wer_best_mean")),
+                ("CER", lambda s: s.get("cer_mean")),
+                ("Realtime-Faktor", lambda s: s.get("rtf_mean"))] +
+               [(f"WER {c}", lambda s, c=c: (s.get("wer_by_category") or {}).get(c))
+                for c in cats])
 
     head = "".join(f'<th><a href="{r["slug"]}.html">{html.escape(r["title"])}</a></th>'
                    for r in runs)
-    body_rows = []
+    body_rows = [("<tr><td>N (Wiederholungen)</td>" +
+                  "".join(f'<td>{r["summary"].get("n_repeats", 1)}</td>' for r in runs) +
+                  "</tr>")]
     for label, get in metrics:
         vals = [get(r["summary"]) for r in runs]
-        best = min(v for v in vals if v is not None)
-        tds = "".join(f'<td class="{"best" if v == best else ""}">'
-                      f'{f"{v:.3f}" if v is not None else "–"}</td>' for v in vals)
+        present = [v for v in vals if v is not None]
+        best = min(present) if present else None
+        tds = "".join(f'<td class="{"best" if v is not None and v == best else ""}">'
+                      f"{fmt(v)}</td>" for v in vals)
         body_rows.append(f"<tr><td>{html.escape(label)}</td>{tds}</tr>")
 
     n = runs[0]["summary"]
@@ -192,11 +235,12 @@ def index_page(runs: list[dict]) -> None:
                         for r in runs)
     body = f"""<h1>Deutscher TTS-Vergleich auf dem DGX Spark</h1>
 <p>{n["n_total"]} Testfälle (<a href="https://github.com/MvdB/dgx-spark-tts">Testset &amp; Eval-Code</a>),
-N={n["n_repeats"]} Wiederholungen, Judge: {html.escape(str(n["stt_model"]))} mit Casing-Prompt.
-Niedriger = besser; bester Wert je Zeile hervorgehoben. Die WER enthält auch STT-Fehler
-(obere Schranke des TTS-Fehlers) — Kategorien-<i>Deltas</i> sind aussagekräftiger als Absolutwerte.
+Judge: {html.escape(str(n.get("stt_model", "?")))} mit Casing-Prompt. Je Modell/Stimme wird der
+jeweils neueste vollständige Lauf gezeigt (Spalten nach WER sortiert, bester Wert je Zeile
+hervorgehoben; niedriger = besser). Die WER enthält auch STT-Fehler (obere Schranke des
+TTS-Fehlers) — Kategorien-<i>Deltas</i> sind aussagekräftiger als Absolutwerte.
 Spaltentitel führen zur Abhörseite mit allen Clips.</p>
-<table><tr><th>Metrik</th>{head}</tr>{"".join(body_rows)}</table>
+<div class="tablewrap"><table><tr><th>Metrik</th>{head}</tr>{"".join(body_rows)}</table></div>
 <h2>Lizenzhinweise</h2>
 <ul>{lic_items}</ul>
 <p class="meta">Geplant: mistralai/Voxtral-4B-TTS (CC BY-NC 4.0, nicht-kommerziell) via vLLM-Omni.</p>"""
@@ -204,16 +248,36 @@ Spaltentitel führen zur Abhörseite mit allen Clips.</p>
                                      encoding="utf-8")
 
 
+def prune(runs: list[dict]) -> None:
+    """Seiten/Audio zu nicht mehr vorhandenen Kombinationen entfernen."""
+    keep = {r["slug"] for r in runs}
+    for p in DOCS.glob("*.html"):
+        if p.stem != "index" and p.stem not in keep:
+            print(f"entfernt (veraltet): {p.relative_to(REPO)}")
+            p.unlink()
+    for d in (DOCS / "audio").glob("*/"):
+        if d.name not in keep:
+            print(f"entfernt (veraltet): {d.relative_to(REPO)}/")
+            for f in d.iterdir():
+                f.unlink()
+            d.rmdir()
+
+
 def main() -> int:
     DOCS.mkdir(exist_ok=True)
-    runs = [load_run(r) for r in RUNS]
+    runs = discover_runs()
+    if not runs:
+        print("keine vollständigen Läufe in results/ gefunden", file=sys.stderr)
+        return 1
     total = 0
     for run in runs:
         size = encode_clips(run)
         total += size
         model_page(run)
-        print(f"{run['slug']}: {len(run['rows'])} Clips, {size / 1e6:.1f} MB")
+        print(f"{run['slug']}: {len(run['rows'])} Clips, {size / 1e6:.1f} MB "
+              f"(aus {run['res_dir'].name})")
     index_page(runs)
+    prune(runs)
     print(f"gesamt: {total / 1e6:.1f} MB Audio → {DOCS}")
     return 0
 

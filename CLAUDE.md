@@ -32,7 +32,7 @@ TTS adapter → WAV → granite-speech-4.1-2b on vLLM (judge) → WER/CER vs. re
 - The judge is the granite-speech **base** model; truecasing/punctuation come only via `chat/completions` with the casing prompt — the `/v1/audio/transcriptions` default is lowercase.
 - Testset `testset/german_tts_v1.jsonl`: 43 cases with categories (normalization, compound, loanword, umlaut, longform, names); each case has one or more acceptable `refs`, scoring takes the best match.
 - Output convention: raw data is written **first** (`results_raw.jsonl`, `audio/*.wav`), summary generation is fail-safe afterwards (`summary.json`). Results dirs are named `results/YYYY-MM-DD_<config>_nN`.
-- `results/` and `*.wav` are **gitignored by design** (raw runs stay local). The published comparison lives in `docs/` (GitHub-Pages-ready): `eval/make_docs.py` encodes one MP3 clip per case (repeat r0 — representative, never the best repeat) from the curated run list at the top of that script and renders `index.html` + one listening page per configuration. Regenerate and commit `docs/` after a new best run.
+- `results/` and `*.wav` are **gitignored by design** (raw runs stay local). The published comparison lives in `docs/` (GitHub-Pages-ready): `eval/make_docs.py` scans `results/`, keeps the newest complete run per (model, voice) — the page name derives from model+voice, so a new run **overwrites** the existing page and orphaned pages are pruned. One MP3 clip per case (repeat r0 — representative, never the best repeat). Regenerate and commit `docs/` after new runs.
 
 ## Commands
 
