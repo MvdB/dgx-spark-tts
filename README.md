@@ -11,8 +11,11 @@ Supported models:
 |---|---|---|---|---|
 | [nvidia/magpie_tts_multilingual_357m](https://huggingface.co/nvidia/magpie_tts_multilingual_357m) | `server.py` (NeMo) | 8001 | NVIDIA Open | German TN only with the `Dockerfile.tn` layer — the NGC container ships without `nemo_text_processing`, so `apply_TN` is a silent no-op otherwise |
 | [Qwen/Qwen3-TTS-12Hz-*](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice) | `server_qwen3tts.py` | 8002 | Apache-2.0 | CustomVoice (9 preset voices) and VoiceDesign (voice from a German `instruct` description); normalizes German numbers without external TN |
+| [ResembleAI Chatterbox Multilingual V3](https://github.com/resemble-ai/chatterbox) | `server_chatterbox.py` | 8003 | MIT | Zero-shot voice cloning from `/voices/<name>.wav`; generated audio carries a Perth watermark |
+| [openbmb/VoxCPM2](https://github.com/OpenBMB/VoxCPM) | `server_voxcpm.py` | 8004 | Apache-2.0 | No fixed speakers; voice via description prefix (`voice=design`) |
+| [mistralai/Voxtral-4B-TTS-2603](https://huggingface.co/mistralai/Voxtral-4B-TTS-2603) *(planned)* | — (native OpenAI API) | — | CC BY-NC 4.0 | Served via vLLM-Omni (use the latest release, 0.24+; model card requires ≥ 0.18); **non-commercial license** |
 
-Both adapters expose the same OpenAI-compatible API, so the evaluator only
+All adapters expose the same OpenAI-compatible API, so the evaluator only
 needs a different `--tts` URL. Models are mounted read-only from the local
 store — no downloads at serve time (exception: Magpie fetches its NanoCodec
 vocoder from HF on first start).
@@ -114,6 +117,32 @@ Caveat: measured WER includes STT errors (upper bound of the TTS error) —
 interpret per-category *deltas* rather than absolute values. Word-level WER
 also over-penalizes German compounds when the STT hyphenates them; check CER
 for that category.
+
+## docs/ — published comparison
+
+`docs/` holds the static comparison pages (GitHub-Pages-ready: Settings →
+Pages → branch `main`, folder `/docs`): `index.html` with the metric table
+across the curated configurations, one listening page per configuration with
+all 43 clips. Per case exactly **one** clip is published (repeat r0, MP3
+~64 kbps mono, ~7 MB total) — representative, not cherry-picked; the raw
+WAV runs stay local in `results/` (gitignored).
+
+Regenerate after a new best run (curated run list is at the top of the script):
+
+```bash
+pip install soundfile   # needs libsndfile >= 1.2 for MP3
+python eval/make_docs.py
+```
+
+## License notes
+
+Model licenses as declared upstream: MagpieTTS — NVIDIA Open Model License;
+Qwen3-TTS — Apache-2.0; Chatterbox — MIT (generated audio carries a
+Perth watermark); VoxCPM2 — Apache-2.0 (upstream forbids impersonation,
+fraud, disinformation and recommends marking AI-generated content — the
+docs pages do); Voxtral TTS — **CC BY-NC 4.0, non-commercial**. All audio
+in `docs/` is AI-generated. These notes are pointers, not legal advice —
+the upstream license texts are authoritative.
 
 ## Requirements
 

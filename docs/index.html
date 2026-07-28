@@ -1,0 +1,41 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deutscher TTS-Vergleich (DGX Spark)</title>
+<style>
+ body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 70rem;
+        padding: 0 1rem; color: #1a1a1a; background: #fff; }
+ a { color: #1a6fb5; }
+ h2 { border-bottom: 2px solid #ccc; padding-bottom: .3rem; margin-top: 2.5rem; }
+ table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+ th, td { border: 1px solid #ccc; padding: .35rem .6rem; text-align: right; }
+ th:first-child, td:first-child { text-align: left; }
+ td.best { font-weight: 700; background: #eaf6ea; }
+ .case { border: 1px solid #ddd; border-radius: 8px; padding: .8rem 1rem; margin: .8rem 0; }
+ .case.bad { border-left: 6px solid #c0392b; }
+ .case.mid { border-left: 6px solid #e67e22; }
+ .case.good { border-left: 6px solid #27ae60; }
+ .text { font-weight: 600; }
+ .transcript { color: #555; font-style: italic; }
+ .meta { color: #777; font-size: .85rem; }
+ footer { margin-top: 3rem; color: #777; font-size: .85rem;
+          border-top: 1px solid #ccc; padding-top: 1rem; }
+ audio { height: 2rem; vertical-align: middle; margin: .2rem .4rem .2rem 0; }
+ @media (prefers-color-scheme: dark) {
+   body { color: #ddd; background: #16181c; }
+   a { color: #6fb3e8; }
+   th, td, .case, h2, footer { border-color: #3a3f47; }
+   td.best { background: #1f3a24; }
+   .transcript { color: #aaa; }
+ }
+</style></head><body>
+<h1>Deutscher TTS-Vergleich auf dem DGX Spark</h1>
+<p>43 Testfälle (<a href="https://github.com/MvdB/dgx-spark-tts">Testset &amp; Eval-Code</a>),
+N=3 Wiederholungen, Judge: granite-speech-4.1-2b mit Casing-Prompt.
+Niedriger = besser; bester Wert je Zeile hervorgehoben. Die WER enthält auch STT-Fehler
+(obere Schranke des TTS-Fehlers) — Kategorien-<i>Deltas</i> sind aussagekräftiger als Absolutwerte.
+Spaltentitel führen zur Abhörseite mit allen Clips.</p>
+<table><tr><th>Metrik</th><th><a href="qwen-unclefu.html">Qwen3-TTS 1.7B CustomVoice · uncle_fu</a></th><th><a href="qwen-design-de.html">Qwen3-TTS 1.7B VoiceDesign · deutsche Beschreibung</a></th><th><a href="voxcpm2-design-de.html">VoxCPM2 · Voice-Design deutsch</a></th><th><a href="chatterbox-de-f1.html">Chatterbox Multilingual V3 · Referenzstimme de_f1</a></th><th><a href="magpie-tn.html">MagpieTTS 357M + deutsche TN · sofia</a></th></tr><tr><td>WER (Mittel)</td><td class="best">0.163</td><td class="">0.175</td><td class="">0.192</td><td class="">0.228</td><td class="">0.220</td></tr><tr><td>WER (best-of-N)</td><td class="">0.119</td><td class="best">0.116</td><td class="">0.127</td><td class="">0.186</td><td class="">0.191</td></tr><tr><td>CER</td><td class="best">0.133</td><td class="">0.137</td><td class="">0.155</td><td class="">0.188</td><td class="">0.142</td></tr><tr><td>Realtime-Faktor</td><td class="best">0.711</td><td class="">0.715</td><td class="">1.286</td><td class="">0.740</td><td class="">0.987</td></tr><tr><td>WER compound</td><td class="best">0.111</td><td class="">0.167</td><td class="">0.169</td><td class="">0.155</td><td class="">0.222</td></tr><tr><td>WER loanword</td><td class="best">0.067</td><td class="">0.135</td><td class="">0.080</td><td class="">0.075</td><td class="">0.099</td></tr><tr><td>WER longform</td><td class="">0.059</td><td class="">0.047</td><td class="">0.093</td><td class="">0.083</td><td class="best">0.040</td></tr><tr><td>WER names</td><td class="">0.086</td><td class="">0.074</td><td class="best">0.062</td><td class="">0.161</td><td class="">0.111</td></tr><tr><td>WER normalization</td><td class="">0.291</td><td class="best">0.278</td><td class="">0.305</td><td class="">0.409</td><td class="">0.361</td></tr><tr><td>WER umlaut</td><td class="best">0.038</td><td class="">0.048</td><td class="">0.115</td><td class="">0.041</td><td class="">0.085</td></tr></table>
+<h2>Lizenzhinweise</h2>
+<ul><li><b>Qwen3-TTS 1.7B CustomVoice · uncle_fu</b>: Apache-2.0</li><li><b>Qwen3-TTS 1.7B VoiceDesign · deutsche Beschreibung</b>: Apache-2.0</li><li><b>VoxCPM2 · Voice-Design deutsch</b>: Apache-2.0</li><li><b>Chatterbox Multilingual V3 · Referenzstimme de_f1</b>: MIT (Audio enthält Perth-Wasserzeichen)</li><li><b>MagpieTTS 357M + deutsche TN · sofia</b>: NVIDIA Open Model License</li></ul>
+<p class="meta">Geplant: mistralai/Voxtral-4B-TTS (CC BY-NC 4.0, nicht-kommerziell) via vLLM-Omni.</p>
+<footer>Alle Clips sind KI-generiert (synthetische Sprache). Die Lizenzangaben sind Hinweise auf die jeweiligen Modell-Lizenzen, keine Rechtsberatung — verbindlich sind allein die Lizenztexte der Modellanbieter.</footer></body></html>
