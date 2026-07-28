@@ -242,8 +242,7 @@ TTS-Fehlers) — Kategorien-<i>Deltas</i> sind aussagekräftiger als Absolutwert
 Spaltentitel führen zur Abhörseite mit allen Clips.</p>
 <div class="tablewrap"><table><tr><th>Metrik</th>{head}</tr>{"".join(body_rows)}</table></div>
 <h2>Lizenzhinweise</h2>
-<ul>{lic_items}</ul>
-<p class="meta">Geplant: mistralai/Voxtral-4B-TTS (CC BY-NC 4.0, nicht-kommerziell) via vLLM-Omni.</p>"""
+<ul>{lic_items}</ul>"""
     (DOCS / "index.html").write_text(page("Deutscher TTS-Vergleich (DGX Spark)", body),
                                      encoding="utf-8")
 
