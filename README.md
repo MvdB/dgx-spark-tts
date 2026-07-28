@@ -62,6 +62,7 @@ Voxtral serving notes (learned the hard way, July 2026):
   deterministically drop number words ("am ersten Juli
   zweitausendsechsundzwanzig" → speaks only "Der Vertrag endet am");
   English and short German sentences are clean. The eval quantifies this.
+  Reported upstream: [vllm-omni#5510](https://github.com/vllm-project/vllm-omni/issues/5510).
 
 | Endpoint | Description |
 |---|---|
