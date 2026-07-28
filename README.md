@@ -13,7 +13,7 @@ Supported models:
 | [Qwen/Qwen3-TTS-12Hz-*](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice) | `server_qwen3tts.py` | 8002 | Apache-2.0 | CustomVoice (9 preset voices) and VoiceDesign (voice from a German `instruct` description); normalizes German numbers without external TN |
 | [ResembleAI Chatterbox Multilingual V3](https://github.com/resemble-ai/chatterbox) | `server_chatterbox.py` | 8003 | MIT | Zero-shot voice cloning from `/voices/<name>.wav`; generated audio carries a Perth watermark |
 | [openbmb/VoxCPM2](https://github.com/OpenBMB/VoxCPM) | `server_voxcpm.py` | 8004 | Apache-2.0 | No fixed speakers; voice via description prefix (`voice=design`) |
-| [mistralai/Voxtral-4B-TTS-2603](https://huggingface.co/mistralai/Voxtral-4B-TTS-2603) *(planned)* | — (native OpenAI API) | — | CC BY-NC 4.0 | Served via vLLM-Omni (use the latest release, 0.24+; model card requires ≥ 0.18); **non-commercial license** |
+| [mistralai/Voxtral-4B-TTS-2603](https://huggingface.co/mistralai/Voxtral-4B-TTS-2603) | — (vLLM-Omni serves the OpenAI API natively) | 8005 | CC BY-NC 4.0 | **Non-commercial license.** 20 preset voices incl. `de_female`/`de_male`; voice cloning impossible (audio-encoder weights not released). See serving notes below — the stable vllm-omni is broken for this model |
 
 All adapters expose the same OpenAI-compatible API, so the evaluator only
 needs a different `--tts` URL. Models are mounted read-only from the local
@@ -41,7 +41,27 @@ curl -s http://127.0.0.1:8002/v1/audio/speech \
   -H 'Content-Type: application/json' \
   -d '{"input": "Guten Morgen!", "voice": "serena", "language": "de"}' \
   -o hallo.wav
+
+# Voxtral-4B-TTS (vLLM-Omni, kein eigener Adapter):
+docker build -t spark-voxtral-tts:v1 -f Dockerfile.voxtral .
+./run_voxtral_tts.sh                                  # port 8005
 ```
+
+Voxtral serving notes (learned the hard way, July 2026):
+
+- vllm-omni **0.24.0 (latest stable) is broken** for Voxtral TTS: text
+  conditioning is lost, the model babbles fluently in the voice's language
+  while ignoring the input. Works from **0.25.0rc1** on the `v0.25.1` vLLM
+  base — both must match in minor version.
+- On GB10 (sm_120), CUDA graph capture corrupts the audio; the vendored
+  `voxtral_tts_stages.yaml` therefore forces `enforce_eager` (RTF ~4).
+- The native endpoint requires `model` in the payload and returns no timing
+  headers — `roundtrip_eval.py` detects this via `/v1/models` and falls back
+  to WAV-length/wall-time.
+- Known model quirk (not a serving bug): longer German sentences
+  deterministically drop number words ("am ersten Juli
+  zweitausendsechsundzwanzig" → speaks only "Der Vertrag endet am");
+  English and short German sentences are clean. The eval quantifies this.
 
 | Endpoint | Description |
 |---|---|

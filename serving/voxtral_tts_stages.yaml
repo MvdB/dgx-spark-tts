@@ -1,0 +1,85 @@
+# Voxtral TTS Stage-Konfiguration fuer vLLM-Omni (Basis: die in vllm-omni
+# gebundelte deploy/voxtral_tts.yaml; explizit uebergeben via
+# --stage-configs-path, vgl. vllm-omni-Issue #3571).
+# Aenderungen gegenueber dem Original, die WIRKUNG haben:
+#  - gpu_memory_utilization reduziert (0.8/0.1 -> 0.25/0.05), weil auf dem
+#    Spark daneben granite-Judge und weitere TTS-Container laufen.
+#  - stage 0 enforce_eager: CUDA-Graph-Capture erzeugte auf GB10 (sm_120)
+#    Kauderwelsch-Audio; eager ist langsamer (RTF ~4), aber korrekt.
+# Abweichungen ohne beobachtete Wirkung (beim Debugging veraendert, fuer
+# Reproduzierbarkeit des Eval-Laufs 2026-07-28 so belassen):
+#  - max_tokens 2048 -> 8192, stage-0 repetition_penalty 1.1 -> 1.0,
+#    codec_chunk/left_context 25 -> 50, connector_get_max_wait 300 -> 3000.
+# Bekannte Modell-Eigenheit (kein Serving-Bug): laengere deutsche Saetze
+# verlieren deterministisch Zahlwoerter; Englisch und kurze Saetze sind
+# fehlerfrei. Audio endet stets mit natuerlicher Stille.
+#
+# Mistral tokenizer/config/load flags are declared per-stage here because
+# DeployConfig does not yet expose them as pipeline-wide fields. They must
+# match on every stage so the engine args stay consistent across workers.
+async_chunk: true
+
+connectors:
+  connector_of_shared_memory:
+    name: SharedMemoryConnector
+    extra:
+      shm_threshold_bytes: 65536
+      codec_streaming: true
+      connector_get_sleep_s: 0.01
+      connector_get_max_wait_first_chunk: 3000
+      connector_get_max_wait: 3000
+      codec_chunk_frames: 50
+      codec_chunk_frames_at_begin: 5
+      codec_left_context_frames: 50
+
+stages:
+  - stage_id: 0
+    max_num_batched_tokens: 32768
+    max_num_seqs: 32
+    gpu_memory_utilization: 0.25
+    enforce_eager: true
+    trust_remote_code: true
+    enable_prefix_caching: false
+    async_scheduling: true
+    max_model_len: 4096
+    devices: "0"
+    output_connectors:
+      to_stage_1: connector_of_shared_memory
+    default_sampling_params:
+      temperature: 0.0
+      top_p: 1.0
+      top_k: -1
+      max_tokens: 8192
+      seed: 42
+      repetition_penalty: 1.0
+      extra_args:
+        cfg_alpha: 1.2
+    tokenizer_mode: mistral
+    config_format: mistral
+    load_format: mistral
+    skip_mm_profiling: true
+    enable_chunked_prefill: false
+
+  - stage_id: 1
+    max_num_seqs: 32
+    gpu_memory_utilization: 0.05
+    enforce_eager: true
+    trust_remote_code: true
+    enable_prefix_caching: false
+    async_scheduling: false
+    max_num_batched_tokens: 65536
+    max_model_len: 65536
+    devices: "0"
+    input_connectors:
+      from_stage_0: connector_of_shared_memory
+    default_sampling_params:
+      temperature: 0.9
+      top_p: 0.8
+      top_k: 40
+      max_tokens: 8192
+      seed: 42
+      repetition_penalty: 1.05
+    tokenizer_mode: mistral
+    config_format: mistral
+    load_format: mistral
+    skip_mm_profiling: true

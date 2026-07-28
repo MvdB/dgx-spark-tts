@@ -64,16 +64,36 @@ def cer(hyp: str, ref: str) -> float:
 
 # ── TTS / STT Clients ────────────────────────────────────────────────────────
 
-def synthesize(tts_url: str, text: str, voice: str, timeout: int = 300) -> tuple[bytes, dict]:
-    r = requests.post(
-        f"{tts_url}/v1/audio/speech",
-        json={"input": text, "voice": voice, "language": "de"},
-        timeout=timeout,
-    )
+def wav_duration(data: bytes) -> float:
+    import io
+    import wave
+
+    with wave.open(io.BytesIO(data)) as w:
+        return w.getnframes() / w.getframerate()
+
+
+def synthesize(tts_url: str, text: str, voice: str, timeout: int = 300,
+               model: str | None = None) -> tuple[bytes, dict]:
+    """model wird nur bei nativen OpenAI-Endpoints gesetzt (vLLM-Omni verlangt
+    das Feld; die eigenen Adapter brauchen es nicht). Timing-Header liefern
+    nur die eigenen Adapter — sonst Fallback auf WAV-Länge und Wall-Zeit."""
+    payload = {"input": text, "voice": voice, "language": "de"}
+    if model:
+        payload["model"] = model
+        payload["response_format"] = "wav"
+    t0 = time.time()
+    r = requests.post(f"{tts_url}/v1/audio/speech", json=payload, timeout=timeout)
+    wall = time.time() - t0
     r.raise_for_status()
+    duration = float(r.headers.get("X-Audio-Duration", 0))
+    if not duration:
+        try:
+            duration = round(wav_duration(r.content), 3)
+        except Exception:
+            duration = 0.0
     meta = {
-        "audio_duration": float(r.headers.get("X-Audio-Duration", 0)),
-        "synthesis_time": float(r.headers.get("X-Synthesis-Time", 0)),
+        "audio_duration": duration,
+        "synthesis_time": float(r.headers.get("X-Synthesis-Time", 0)) or round(wall, 3),
     }
     return r.content, meta
 
@@ -136,10 +156,16 @@ def main() -> int:
         cases = cases[: args.limit]
 
     model_id = stt_model_id(args.stt)
+    tts_payload_model = None  # nur native OpenAI-Endpoints (vLLM-Omni) brauchen 'model'
     try:
         tts_model = requests.get(f"{args.tts}/health", timeout=10).json().get("model", "?")
     except Exception:
-        tts_model = "?"
+        try:
+            tts_payload_model = requests.get(
+                f"{args.tts}/v1/models", timeout=10).json()["data"][0]["id"]
+            tts_model = tts_payload_model
+        except Exception:
+            tts_model = "?"
     print(f"TTS: {tts_model} | STT: {model_id} | {len(cases)} Fälle, Stimme: {args.voice}")
 
     results = []
@@ -152,7 +178,8 @@ def main() -> int:
             try:
                 for rep in range(args.repeats):
                     t0 = time.time()
-                    wav, meta = synthesize(args.tts, case["text"], args.voice)
+                    wav, meta = synthesize(args.tts, case["text"], args.voice,
+                                           model=tts_payload_model)
                     suffix = f"_r{rep}" if args.repeats > 1 else ""
                     (out / "audio" / f"{case['id']}{suffix}.wav").write_bytes(wav)
                     transcript = transcribe(args.stt, model_id, wav)

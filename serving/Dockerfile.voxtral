@@ -1,0 +1,27 @@
+# Voxtral-4B-TTS auf DGX Spark (GB10, aarch64).
+# Kein eigener Adapter: vLLM-Omni exponiert /v1/audio/speech nativ
+# (OpenAI-kompatibel).
+#
+# Versionswahl (Stand Juli 2026, hart erkaempft):
+#  - vllm-omni 0.24.0 (letztes Stable) ist fuer Voxtral-TTS KAPUTT: die
+#    Text-Konditionierung geht ueber den deprecated additional_information-
+#    Pfad verloren -> Modell babbelt fluessig in der Sprache der Stimme,
+#    ignoriert aber den Eingabetext komplett.
+#  - Fix erst in vllm-omni 0.25.0rc1 (passend zur Basis vllm v0.25.1;
+#    beide muessen im Minor uebereinstimmen). Beim Update BEIDE gemeinsam
+#    anheben und den Kauderwelsch-Test aus der README wiederholen.
+#  - soxr: nur fuer den ref_audio-Pfad noetig, der mit dem Open-Source-
+#    Checkpoint ohnehin nicht funktioniert (Audio-Encoder-Gewichte nicht
+#    veroeffentlicht -> nur die 20 Preset-Stimmen sind nutzbar).
+#
+# Achtung Lizenz: Voxtral-TTS ist CC BY-NC 4.0 (nicht-kommerziell).
+FROM vllm/vllm-openai:v0.25.1
+
+RUN pip install --no-cache-dir "vllm-omni==0.25.0rc1" soxr \
+    && python3 -c "import vllm_omni, soxr, torch; assert torch.version.cuda; \
+print('vllm-omni', vllm_omni.__version__)"
+
+EXPOSE 8005
+# Modellpfad und Flags kommen aus run_voxtral_tts.sh; die Stage-Konfiguration
+# (voxtral_tts_stages.yaml) wird per Volume eingebunden.
+ENTRYPOINT ["vllm", "serve"]

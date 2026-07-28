@@ -18,8 +18,11 @@ Four TTS model adapters, all exposing the **same OpenAI-compatible API** (`POST 
 | `serving/server_qwen3tts.py` | Qwen3-TTS-12Hz (CustomVoice or VoiceDesign via `MODEL_DIR`) | 8002 | `spark-qwen3-tts:v1` |
 | `serving/server_chatterbox.py` | ResembleAI Chatterbox Multilingual V3 | 8003 | `spark-chatterbox:v1` |
 | `serving/server_voxcpm.py` | openbmb/VoxCPM2 | 8004 | `spark-voxcpm:v1` |
+| — (vLLM-Omni native) | mistralai/Voxtral-4B-TTS-2603 | 8005 | `spark-voxtral-tts:v1` |
 
 Image layering matters: `Dockerfile.chatterbox` and `Dockerfile.voxcpm` build **FROM `spark-qwen3-tts:v1`** (it already contains NGC torch + source-built torchaudio); `Dockerfile.tn` builds FROM `spark-magpie-tts:v1` and adds German text normalization (pynini has no aarch64 wheel — prebuilt OpenFst/pynini artifacts are required in the build context, see its header). Without the `.tn` layer, Magpie's `apply_TN` is a **silent no-op**. Each derived Dockerfile ends its pip install with an import/CUDA guard (`torch.version.cuda`, torchaudio CUDA check, model import) — keep that when touching dependencies.
+
+Voxtral is different: no adapter of ours — vLLM-Omni serves `/v1/audio/speech` natively (`Dockerfile.voxtral`, FROM `vllm/vllm-openai:v0.25.1` + `vllm-omni==0.25.0rc1`; the stable 0.24.0 is **broken** for this model — it ignores the input text). Two hard-won platform facts in `serving/voxtral_tts_stages.yaml`: `enforce_eager` is required on GB10 (CUDA graphs corrupt the audio), and vllm/vllm-omni must match in minor version. The evaluator auto-detects native endpoints via `/v1/models` (sends `model` field, falls back to WAV-length timing).
 
 Models are mounted read-only from `~/hf_models` (`HF_MODELS_DIR`); no downloads at serve time (exception: Magpie fetches its NanoCodec vocoder from HF on first start).
 
