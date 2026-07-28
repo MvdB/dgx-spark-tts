@@ -58,11 +58,21 @@ Voxtral serving notes (learned the hard way, July 2026):
 - The native endpoint requires `model` in the payload and returns no timing
   headers — `roundtrip_eval.py` detects this via `/v1/models` and falls back
   to WAV-length/wall-time.
-- Known model quirk (not a serving bug): longer German sentences
-  deterministically drop number words ("am ersten Juli
-  zweitausendsechsundzwanzig" → speaks only "Der Vertrag endet am");
-  English and short German sentences are clean. The eval quantifies this.
-  Reported upstream: [vllm-omni#5510](https://github.com/vllm-project/vllm-omni/issues/5510).
+- ⚠️ **Judge caveat, learned the painful way**: granite-speech-4.1-2b
+  systematically drops number words when transcribing *Voxtral* audio —
+  the audio itself is correct (verified by ear and by a second judge,
+  Voxtral-Mini-3B; see the retracted upstream report
+  [vllm-omni#5510](https://github.com/vllm-project/vllm-omni/issues/5510)).
+  Voxtral's granite-based WER is therefore pessimistic, especially in the
+  normalization category. `eval/rescore_with_judge.py` re-scores existing
+  runs with a second STT endpoint (protocol: repeat r0, best WER over
+  refs + normalized original text) — the docs pages show both judges.
+  But the second judge is not neutral either: Voxtral-Mini aggressively
+  inverse-normalizes to digits ("null eins null sieben" → "01.07."),
+  which **hides** exactly the verbalization errors the testset probes and
+  flatters Magpie. Read the spread between both judges as the honest
+  uncertainty band. Never verify a categorical TTS finding with a single
+  STT model.
 
 | Endpoint | Description |
 |---|---|

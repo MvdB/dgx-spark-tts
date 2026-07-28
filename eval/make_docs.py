@@ -133,12 +133,16 @@ def discover_runs() -> list[dict]:
         if prev and run_date(prev["res_dir"]) >= run_date(d):
             continue
         disp = model_display(s["tts_model"])
+        rescore = None
+        if (d / "rescore_judge2.json").exists():
+            rescore = json.loads((d / "rescore_judge2.json").read_text(encoding="utf-8"))
         by_combo[combo] = {
             "res_dir": d,
             "summary": s,
             "slug": f"{slugify(disp)}-{slugify(str(s['voice']))}",
             "title": f"{disp} · {s['voice']}",
             "license": license_note(s["tts_model"]),
+            "rescore": rescore,
             "rows": [json.loads(l) for l in
                      (d / "results_raw.jsonl").read_text(encoding="utf-8").splitlines()],
         }
@@ -185,6 +189,15 @@ def model_page(run: dict) -> None:
              f'{s.get("n_repeats", 1)} Wiederholung(en)); WER ist der Mittelwert über '
              'alle Wiederholungen. Rot ≥ 0.3, Orange ≥ 0.1, Grün &lt; 0.1.</p>']
 
+    rescore_by_id = {}
+    if run["rescore"]:
+        rescore_by_id = {c["id"]: c for c in run["rescore"]["cases"]}
+        parts.append(
+            f'<p class="meta">Kreuzvalidiert mit Zweit-Judge '
+            f'{html.escape(run["rescore"]["judge2"])} (r0, beste WER über refs+Text): '
+            f'WER {run["rescore"]["wer_judge2_mean"]:.3f} '
+            f'(Judge 1 im selben Protokoll: {run["rescore"]["wer_judge1_mean"]:.3f}).</p>')
+
     by_cat: dict[str, list] = {}
     for r in run["rows"]:
         by_cat.setdefault(r["category"], []).append(r)
@@ -196,10 +209,14 @@ def model_page(run: dict) -> None:
             cls = "bad" if (w or 0) >= 0.3 else ("mid" if (w or 0) >= 0.1 else "good")
             tx = (r.get("repeats") or [r])[0].get("transcript", "")
             wer_str = f"{w:.2f}" if w is not None else "FEHLER"
+            j2 = rescore_by_id.get(r["id"])
+            j2_html = (f'<div class="transcript">→ Judge 2: {html.escape(j2["judge2_transcript"])}'
+                       f' <span class="meta">(WER {j2["wer_judge2"]:.2f})</span></div>' if j2 else "")
             parts.append(f"""<div class="case {cls}">
  <div class="text">{html.escape(r["text"])}</div>
  <div><audio controls preload="none" src="audio/{run["slug"]}/{r["id"]}.mp3"></audio></div>
  <div class="transcript">→ {html.escape(tx)}</div>
+ {j2_html}
  <div class="meta">{r["id"]} · WER {wer_str}</div>
 </div>""")
 
@@ -230,9 +247,39 @@ def index_page(runs: list[dict]) -> None:
                       f"{fmt(v)}</td>" for v in vals)
         body_rows.append(f"<tr><td>{html.escape(label)}</td>{tds}</tr>")
 
+    # Zweit-Judge-Zeilen (Kreuzvalidierung; Protokoll: r0, beste WER über
+    # refs + Originaltext — siehe Methodik-Absatz)
+    if any(r["rescore"] for r in runs):
+        judge2 = next(r["rescore"]["judge2"] for r in runs if r["rescore"])
+        for label, key in [(f"WER {runs[0]['summary'].get('stt_model', 'Judge 1')} (r0, refs+Text)", "wer_judge1_mean"),
+                           (f"WER {judge2} (r0, refs+Text)", "wer_judge2_mean")]:
+            vals = [r["rescore"].get(key) if r["rescore"] else None for r in runs]
+            present = [v for v in vals if v is not None]
+            best = min(present) if present else None
+            tds = "".join(f'<td class="{"best" if v is not None and v == best else ""}">'
+                          f"{fmt(v)}</td>" for v in vals)
+            body_rows.append(f"<tr><td>{html.escape(label)}</td>{tds}</tr>")
+
     n = runs[0]["summary"]
     lic_items = "".join(f"<li><b>{html.escape(r['title'])}</b>: {html.escape(r['license'])}</li>"
                         for r in runs)
+    judge_note = ""
+    if any(r["rescore"] for r in runs):
+        judge2 = next(r["rescore"]["judge2"] for r in runs if r["rescore"])
+        judge_note = (
+            f'<p><b>Judge-Kreuzvalidierung:</b> Kein STT-Judge ist neutral, deshalb zeigen '
+            f'die unteren beiden Zeilen beide Judges im identischen Protokoll (nur '
+            f'Wiederholung r0, beste WER über refs plus normalisierten Originaltext). '
+            f'Die Fehlerbilder sind komplementär: Der Haupt-Judge transkribiert wörtlich '
+            f'(gut für die normalization-Kategorie), verschluckt aber bei Voxtral-Audio '
+            f'systematisch Zahlwörter und zerlegt Komposita mit Bindestrichen. '
+            f'{html.escape(judge2)} hört robuster, <i>rück-normalisiert</i> aber aggressiv '
+            f'zu Ziffern — spricht ein Modell "null eins null sieben" statt "erster Juli", '
+            f'schreibt er trotzdem "01.07." und kaschiert damit genau die '
+            f'Verbalisierungsfehler, die das Testset messen soll (davon profitiert v.&nbsp;a. '
+            f'Magpie). Lesart: Die Spanne zwischen beiden Zeilen ist das ehrliche '
+            f'Unsicherheitsband; für normalization ist der Haupt-Judge aussagekräftiger, '
+            f'für reine Verständlichkeit {html.escape(judge2)}.</p>')
     body = f"""<h1>Deutscher TTS-Vergleich auf dem DGX Spark</h1>
 <p>{n["n_total"]} Testfälle (<a href="https://github.com/MvdB/dgx-spark-tts">Testset &amp; Eval-Code</a>),
 Judge: {html.escape(str(n.get("stt_model", "?")))} mit Casing-Prompt. Je Modell/Stimme wird der
@@ -240,6 +287,7 @@ jeweils neueste vollständige Lauf gezeigt (Spalten nach WER sortiert, bester We
 hervorgehoben; niedriger = besser). Die WER enthält auch STT-Fehler (obere Schranke des
 TTS-Fehlers) — Kategorien-<i>Deltas</i> sind aussagekräftiger als Absolutwerte.
 Spaltentitel führen zur Abhörseite mit allen Clips.</p>
+{judge_note}
 <div class="tablewrap"><table><tr><th>Metrik</th>{head}</tr>{"".join(body_rows)}</table></div>
 <h2>Lizenzhinweise</h2>
 <ul>{lic_items}</ul>"""
