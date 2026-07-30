@@ -17,6 +17,11 @@
  .case.good { border-left: 6px solid #27ae60; }
  .text { font-weight: 600; }
  .transcript { color: #555; font-style: italic; }
+ .prompt { margin: .6rem 0; padding: .6rem .8rem; background: #f4f6f8;
+           border-left: 3px solid #1a6fb5; border-radius: 3px; }
+ .prompt b { display: block; font-size: .85rem; text-transform: uppercase;
+             letter-spacing: .03em; color: #45596b; margin-bottom: .3rem; }
+ .prompt code { font-size: .9rem; white-space: pre-wrap; word-break: break-word; }
  .meta { color: #777; font-size: .85rem; }
  footer { margin-top: 3rem; color: #777; font-size: .85rem;
           border-top: 1px solid #ccc; padding-top: 1rem; }
@@ -27,12 +32,16 @@
    th, td, .case, h2, footer { border-color: #3a3f47; }
    td.best { background: #1f3a24; }
    .transcript { color: #aaa; }
+   .prompt { background: #1c2126; border-left-color: #4a9eda; }
+   .prompt b { color: #8fa6b8; }
  }
 </style></head><body>
 <p><a href="index.html">← Übersicht</a></p>
 <h1>Qwen3-TTS-12Hz-1.7B-VoiceDesign · de_female_news</h1>
 <p class="meta">Modell: /hf_models/Qwen--Qwen3-TTS-12Hz-1.7B-VoiceDesign · Stimme: de_female_news · STT-Judge: whisper-large-v3 · WER 0.167 (Cap 1.0) · CER 0.139 · RTF 0.71 · Lizenz: Apache-2.0 · Lauf: 2026-07-30_suite_qwen-vd-de-female-news</p>
 <p class="meta">Je Fall ein Clip (erste von 3 Wiederholung(en)); WER ist der Mittelwert über alle Wiederholungen. Rot ≥ 0.3, Orange ≥ 0.1, Grün &lt; 0.1.</p>
+<div class="prompt"><b>Stimm-Prompt (instruct)</b><code>Klare, professionelle deutsche Frauenstimme mittleren Alters. Muttersprachliches Hochdeutsch, neutrale Nachrichtensprecher-Intonation, praezise Artikulation.</code></div>
+<div class="prompt"><b>Judge-Prompt</b><code>Alle Zahlen, Daten, Uhrzeiten und Abkürzungen werden als Wörter ausgeschrieben, niemals als Ziffern. Beispiele: acht neun sieben sechs, dreiundzwanzigster März neunzehnhundertachtzig, sechs Uhr zwanzig, zweiundvierzig Komma sieben, achtundneunzig Prozent, Absatz sieben.</code></div>
 <p class="meta">Kreuzvalidiert mit Zweit-Judge voxtral-mini-3b (r0, beste WER über refs+Text): WER 0.099 (Judge 1 im selben Protokoll: 0.124).</p>
 <h2>compound</h2>
 <div class="case bad">

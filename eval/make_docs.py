@@ -71,6 +71,11 @@ CSS = """
  .case.good { border-left: 6px solid #27ae60; }
  .text { font-weight: 600; }
  .transcript { color: #555; font-style: italic; }
+ .prompt { margin: .6rem 0; padding: .6rem .8rem; background: #f4f6f8;
+           border-left: 3px solid #1a6fb5; border-radius: 3px; }
+ .prompt b { display: block; font-size: .85rem; text-transform: uppercase;
+             letter-spacing: .03em; color: #45596b; margin-bottom: .3rem; }
+ .prompt code { font-size: .9rem; white-space: pre-wrap; word-break: break-word; }
  .meta { color: #777; font-size: .85rem; }
  footer { margin-top: 3rem; color: #777; font-size: .85rem;
           border-top: 1px solid #ccc; padding-top: 1rem; }
@@ -81,6 +86,8 @@ CSS = """
    th, td, .case, h2, footer { border-color: #3a3f47; }
    td.best { background: #1f3a24; }
    .transcript { color: #aaa; }
+   .prompt { background: #1c2126; border-left-color: #4a9eda; }
+   .prompt b { color: #8fa6b8; }
  }
 """
 
@@ -191,6 +198,17 @@ def model_page(run: dict) -> None:
              '<p class="meta">Je Fall ein Clip (erste von '
              f'{s.get("n_repeats", 1)} Wiederholung(en)); WER ist der Mittelwert über '
              'alle Wiederholungen. Rot ≥ 0.3, Orange ≥ 0.1, Grün &lt; 0.1.</p>']
+
+    # Bei prompt-gesteuerten Stimmen (Qwen VoiceDesign, VoxCPM2) IST der
+    # instruct-Text die Stimme — ohne ihn ist die Seite nicht nachvollziehbar.
+    if s.get("voice_instruct"):
+        parts.append(
+            f'<div class="prompt"><b>Stimm-Prompt (instruct)</b>'
+            f'<code>{html.escape(s["voice_instruct"])}</code></div>')
+    if s.get("stt_prompt"):
+        parts.append(
+            f'<div class="prompt"><b>Judge-Prompt</b>'
+            f'<code>{html.escape(s["stt_prompt"])}</code></div>')
 
     rescore_by_id = {}
     if run["rescore"]:

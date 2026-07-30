@@ -38,26 +38,33 @@ ATTN_IMPL = os.environ.get("QWEN_TTS_ATTN", "sdpa")  # flash_attention_2 wenn ve
 # Auswertung unterscheidbar bleibt, gibt es benannte Presets: das voice-Feld
 # waehlt das Preset, ein freies instruct im Request sticht es weiterhin.
 # (Die Beschreibungen stehen bewusst auf Deutsch — die Modellkarte gibt die
-# instruct-Beispiele in der Zielsprache an.)
+# instruct-Beispiele in der Zielsprache an — und mit echten Umlauten: ASCII-
+# Umschreibungen wie "Maennerstimme" sind fuer das Modell Fliesstext und
+# schlechter interpretierbar.)
 VOICE_DESIGN_MODE = "voicedesign" in MODEL_PATH.lower().replace("-", "")
 
 VOICE_DESIGN_PRESETS = {
     "de_female_news":
         "Klare, professionelle deutsche Frauenstimme mittleren Alters. "
         "Muttersprachliches Hochdeutsch, neutrale Nachrichtensprecher-Intonation, "
-        "praezise Artikulation.",
+        "präzise Artikulation.",
+    # Nach Hörvergleich gewählt (2026-07-30): die Vorgängerfassung ("ruhig,
+    # sonor, mäßiges Sprechtempo") klang gedehnt und klagend und brauchte für
+    # denselben Satz 13.4 s statt 8.6 s. Die expliziten Negativ-Vorgaben am
+    # Ende wirken — ohne sie kippt die Satzmelodie ins Fragende.
     "de_male_news":
-        "Ruhige, sonore deutsche Maennerstimme mittleren Alters. "
-        "Muttersprachliches Hochdeutsch, sachliche Nachrichtensprecher-Intonation, "
-        "deutliche Artikulation, maessiges Sprechtempo.",
+        "Kräftige deutsche Männerstimme mit tiefer, ruhiger Bruststimme. "
+        "Muttersprachliches Hochdeutsch, selbstbewusster und freundlicher Ton, "
+        "mittleres Tempo, Satzenden fallen ab, kein Klagen und kein Fragen "
+        "in der Stimme.",
     "de_female_calm":
         "Freundliche deutsche Frauenstimme, warm und ruhig. Muttersprachliches "
         "Hochdeutsch, langsames bis mittleres Sprechtempo, sehr deutliche "
-        "Aussprache jeder Silbe, keine Dialektfaerbung.",
+        "Aussprache jeder Silbe, keine Dialektfärbung.",
     "de_male_young":
-        "Juengere deutsche Maennerstimme, lebendig und zugewandt. "
-        "Muttersprachliches Hochdeutsch, natuerliche Sprachmelodie mit "
-        "leichter Betonung, zuegiges Sprechtempo, klare Endsilben.",
+        "Jüngere deutsche Männerstimme, lebendig und zugewandt. "
+        "Muttersprachliches Hochdeutsch, natürliche Sprachmelodie mit "
+        "leichter Betonung, zügiges Sprechtempo, klare Endsilben.",
 }
 DEFAULT_DESIGN_VOICE = os.environ.get("QWEN_TTS_VOICE_DESIGN", "de_female_news")
 
