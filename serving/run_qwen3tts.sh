@@ -13,10 +13,16 @@ if docker ps -a --format '{{.Names}}' | grep -qx "${CONTAINER_NAME}"; then
   docker rm -f "${CONTAINER_NAME}" >/dev/null
 fi
 
+# VoiceDesign: Stimme per Preset-Name (QWEN_TTS_VOICE_DESIGN) oder freiem
+# instruct-Text (QWEN_TTS_VOICE_INSTRUCT, sticht das Preset). Beide muessen in
+# den Container durchgereicht werden — sonst laeuft immer die eingebackene
+# Default-Stimme, egal was ausserhalb gesetzt ist.
 docker run -d --name "${CONTAINER_NAME}" \
   --gpus all \
   -p "${HOST_PORT}:8002" \
   -e QWEN_TTS_PATH="/hf_models/${MODEL_DIR}" \
+  -e QWEN_TTS_VOICE_DESIGN="${QWEN_TTS_VOICE_DESIGN:-de_female_news}" \
+  -e QWEN_TTS_VOICE_INSTRUCT="${QWEN_TTS_VOICE_INSTRUCT:-}" \
   -v "${HF_MODELS_DIR}:/hf_models:ro" \
   "${IMAGE}"
 

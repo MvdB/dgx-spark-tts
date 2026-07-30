@@ -51,6 +51,11 @@ IMAGE=spark-magpie-tts:v1-tn ./run_server.sh          # port 8001
 docker build -t spark-qwen3-tts:v1 -f Dockerfile.qwen3tts .
 ./run_qwen3tts.sh                                     # port 8002
 MODEL_DIR=Qwen--Qwen3-TTS-12Hz-1.7B-VoiceDesign ./run_qwen3tts.sh
+# VoiceDesign hat keine festen Sprecher: die Stimme ist ein instruct-Text.
+# Benannte Presets (de_female_news, de_male_news, de_female_calm) werden ueber
+# das normale voice-Feld gewaehlt — ein Server bedient alle. QWEN_TTS_VOICE_DESIGN
+# setzt den Default, QWEN_TTS_VOICE_INSTRUCT ueberschreibt mit Freitext.
+# Ohne Preset-Namen hiessen alle Laeufe "design" und kollidierten in docs/.
 
 # Chatterbox / VoxCPM2 (require spark-qwen3-tts:v1 to exist):
 docker build -t spark-chatterbox:v1 -f Dockerfile.chatterbox .
@@ -88,6 +93,8 @@ There are no unit tests or linters; the eval run *is* the test.
 
 - **Never fix a voice without running the eval against it.** With Qwen3-TTS the voice shifts entire error classes (a Chinese-native voice derailed German compounds into English; an English-native voice mangled German digits).
 - Use `--repeats 3`: Magpie and Qwen sample stochastically; single runs swing small categories by ±0.1 WER.
+- **Run-to-run spread at n=3 is ~0.02 WER on the overall mean** — measured directly: the same Qwen VoiceDesign voice (`de_female_news`, byte-identical instruct) scored 0.182 and 0.160 in two runs. Differences below ~0.02 between configurations are noise; do not rank on them. The current top three (uncle_fu 0.151, de_male_news 0.157, de_female_news 0.160) are one indistinguishable group.
+- WER is unbounded above and a single degenerate repeat can dominate the mean. Report `wer_capped_mean` (each repeat capped at 1.0); the gap to the raw mean shows how far individual repeats derailed. The judge itself loops (1500+ chars of "null. null. …" for 3.7 s of audio) — `roundtrip_eval.py` detects the implausible length/duration ratio and retries once with `temperature 0.3`, flagging survivors as `asr_runaway`. This is not cosmetic: it moved VoxCPM2 from 0.534 to 0.185, i.e. its apparent collapse was mostly judge hallucination, with one genuine loop-babble repeat left over.
 - Measured WER includes STT errors (it's an upper bound of TTS error) — interpret per-category **deltas**, not absolutes. Word-level WER over-penalizes German compounds when the STT hyphenates them; check CER there.
 - The testset deliberately does not measure prosody/naturalness (use `listen.html` for a human spot-check) or homograph stress.
 - Cross-model comparisons are consolidated in `results/COMPARISON_*.md`.

@@ -31,37 +31,44 @@
 </style></head><body>
 <p><a href="index.html">← Übersicht</a></p>
 <h1>Qwen3-TTS-12Hz-1.7B-CustomVoice · serena</h1>
-<p class="meta">Modell: /hf_models/Qwen--Qwen3-TTS-12Hz-1.7B-CustomVoice · Stimme: serena · STT-Judge: granite-speech-4.1-2b · WER 0.293 · CER 0.202 · RTF 0.75 · Lizenz: Apache-2.0 · Lauf: 2026-07-28_suite_qwen-cv-serena</p>
+<p class="meta">Modell: /hf_models/Qwen--Qwen3-TTS-12Hz-1.7B-CustomVoice · Stimme: serena · STT-Judge: granite-speech-4.1-2b · WER 0.272 (Cap 1.0) · CER 0.201 · RTF 0.74 · Lizenz: Apache-2.0 · Lauf: 2026-07-29_suite_qwen-cv-serena</p>
 <p class="meta">Je Fall ein Clip (erste von 3 Wiederholung(en)); WER ist der Mittelwert über alle Wiederholungen. Rot ≥ 0.3, Orange ≥ 0.1, Grün &lt; 0.1.</p>
-<p class="meta">Kreuzvalidiert mit Zweit-Judge voxtral-mini-3b (r0, beste WER über refs+Text): WER 0.204 (Judge 1 im selben Protokoll: 0.285).</p>
+<p class="meta">Kreuzvalidiert mit Zweit-Judge voxtral-mini-3b (r0, beste WER über refs+Text): WER 0.199 (Judge 1 im selben Protokoll: 0.245).</p>
 <h2>compound</h2>
-<div class="case bad">
- <div class="text">Die Wärmepumpenjahresarbeitszahl liegt bei vier.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/comp-006.mp3"></audio></div>
- <div class="transcript">→ The Vermopumpen Yaris are by Tao, licked by Fear.</div>
- <div class="transcript">→ Judge 2: Die Vermoppung Jaires Arbeitstau leckte bei Fear. <span class="meta">(WER 1.00)</span></div>
- <div class="meta">comp-006 · WER 1.13</div>
-</div>
 <div class="case bad">
  <div class="text">Der Donaudampfschifffahrtskapitän ging von Bord.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/comp-002.mp3"></audio></div>
- <div class="transcript">→ de Donald Trump&#x27;s Shifas Capitaine ging von Bord.</div>
- <div class="transcript">→ Judge 2: Der Donautampf Schiffers Kapitän ging vom Bord. <span class="meta">(WER 0.80)</span></div>
- <div class="meta">comp-002 · WER 0.93</div>
+ <div class="transcript">→ Der Donald Trump Schiffahrtskapitän ging von Bord.</div>
+ <div class="transcript">→ Judge 2: Der Donauschiffahrtskapitän ging von Bord. <span class="meta">(WER 0.20)</span></div>
+ <div class="meta">comp-002 · WER 0.60</div>
+</div>
+<div class="case bad">
+ <div class="text">Die Wärmepumpenjahresarbeitszahl liegt bei vier.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/comp-006.mp3"></audio></div>
+ <div class="transcript">→ Die Wärmer Pampen jahresarbeitszeit liegt bei vier.</div>
+ <div class="transcript">→ Judge 2: Die Wärmepumpen-Jahresarbeitszahl liegt bei 4. <span class="meta">(WER 0.60)</span></div>
+ <div class="meta">comp-006 · WER 0.53</div>
 </div>
 <div class="case mid">
- <div class="text">Die Grafikprozessoreinheit übernimmt die Bildschirmausgabe.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/comp-003.mp3"></audio></div>
- <div class="transcript">→ Die Grafikprozessor-Anheit übernimmt die Bildschirmausgabe.</div>
- <div class="transcript">→ Judge 2: Die Graphic-Prozessor-Einheit übernimmt die Bildschirmausgabe. <span class="meta">(WER 0.60)</span></div>
- <div class="meta">comp-003 · WER 0.13</div>
+ <div class="text">Der Kieferorthopäde empfahl eine Röntgenuntersuchung.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/comp-005.mp3"></audio></div>
+ <div class="transcript">→ Der Kieferorthopäde empfahl eine räumliche Untersuchung.</div>
+ <div class="transcript">→ Judge 2: Der Kieferorthopäde im Fall einer Röntgenuntersuchung. <span class="meta">(WER 0.60)</span></div>
+ <div class="meta">comp-005 · WER 0.27</div>
 </div>
 <div class="case good">
  <div class="text">Die Rechtsschutzversicherungsgesellschaften senkten ihre Beiträge.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/comp-001.mp3"></audio></div>
  <div class="transcript">→ Die Rechtsschutzversicherungsgesellschaften senkten ihre Beiträge.</div>
  <div class="transcript">→ Judge 2: Die Rechtsschutzversicherungsgesellschaften senkten ihre Beiträge. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">comp-001 · WER 0.07</div>
+ <div class="meta">comp-001 · WER 0.00</div>
+</div>
+<div class="case good">
+ <div class="text">Die Grafikprozessoreinheit übernimmt die Bildschirmausgabe.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/comp-003.mp3"></audio></div>
+ <div class="transcript">→ Die Grafikprozessoreinheit übernimmt die Bildschirmausgabe.</div>
+ <div class="transcript">→ Judge 2: Die Grafikprozessor-Einheit übernimmt die Bildschirmausgabe. <span class="meta">(WER 0.40)</span></div>
+ <div class="meta">comp-003 · WER 0.00</div>
 </div>
 <div class="case good">
  <div class="text">Das Bundesausbildungsförderungsgesetz wurde novelliert.</div>
@@ -70,25 +77,25 @@
  <div class="transcript">→ Judge 2: Das Bundesausbildungsförderungsgesetz wurde novelliert. <span class="meta">(WER 0.00)</span></div>
  <div class="meta">comp-004 · WER 0.00</div>
 </div>
-<div class="case good">
- <div class="text">Der Kieferorthopäde empfahl eine Röntgenuntersuchung.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/comp-005.mp3"></audio></div>
- <div class="transcript">→ Der Kieferorthopäde empfahl eine Röntgenuntersuchung.</div>
- <div class="transcript">→ Judge 2: Der Kieferorthopäde im Verein Röntgen untersuchte <span class="meta">(WER 0.80)</span></div>
- <div class="meta">comp-005 · WER 0.00</div>
-</div>
 <h2>loanword</h2>
 <div class="case bad">
  <div class="text">Unser Team reviewt die Pull-Requests im Daily.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/loan-004.mp3"></audio></div>
- <div class="transcript">→ On the team, review the pool requests in daily.</div>
- <div class="transcript">→ Judge 2: Die Team reviewed die Pull-Requests in daily. <span class="meta">(WER 0.38)</span></div>
- <div class="meta">loan-004 · WER 0.75</div>
+ <div class="transcript">→ Unser Team reviewed Pull Requests in Delhi.</div>
+ <div class="transcript">→ Judge 2: Unser Team reviewed Poll-Anfragen täglich. <span class="meta">(WER 0.71)</span></div>
+ <div class="meta">loan-004 · WER 0.62</div>
+</div>
+<div class="case bad">
+ <div class="text">Die Machine-Learning-Pipeline läuft auf dem neuen Server.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/loan-005.mp3"></audio></div>
+ <div class="transcript">→ The machine learning pipeline läuft auf dem neuen Server.</div>
+ <div class="transcript">→ Judge 2: Die Machine-Learning-Pipeline lebt vom Nöen Server. <span class="meta">(WER 0.44)</span></div>
+ <div class="meta">loan-005 · WER 0.41</div>
 </div>
 <div class="case mid">
  <div class="text">Zum Espresso gab es ein Stück Zucchinikuchen.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/loan-006.mp3"></audio></div>
- <div class="transcript">→ Zum Espresso gab es ein Stück zu Kinnikicken.</div>
+ <div class="transcript">→ Zum Missetresso gab es ein Stück Zukunncuchen.</div>
  <div class="transcript">→ Judge 2: Zum Espresso gab es ein Stück Zucchini-Kuchen. <span class="meta">(WER 0.29)</span></div>
  <div class="meta">loan-006 · WER 0.29</div>
 </div>
@@ -97,50 +104,43 @@
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/loan-002.mp3"></audio></div>
  <div class="transcript">→ Er verlor sein Portemonnaie im Restaurant.</div>
  <div class="transcript">→ Judge 2: Er verlor sein Portemonnaie im Restaurant. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">loan-002 · WER 0.17</div>
-</div>
-<div class="case good">
- <div class="text">Das Update wird über die Cloud eingespielt.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/loan-003.mp3"></audio></div>
- <div class="transcript">→ Das Update wird über die Cloud angespielt.</div>
- <div class="transcript">→ Judge 2: Das Update wird über die Cloud angespielt. <span class="meta">(WER 0.14)</span></div>
- <div class="meta">loan-003 · WER 0.10</div>
+ <div class="meta">loan-002 · WER 0.28</div>
 </div>
 <div class="case good">
  <div class="text">Ihr Engagement für das Ensemble war beachtlich.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/loan-001.mp3"></audio></div>
  <div class="transcript">→ Ihr Engagement für das Ensemble war beachtlich.</div>
  <div class="transcript">→ Judge 2: Ihr Engagement für das Ensemble war beachtlich. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">loan-001 · WER 0.05</div>
+ <div class="meta">loan-001 · WER 0.00</div>
 </div>
 <div class="case good">
- <div class="text">Die Machine-Learning-Pipeline läuft auf dem neuen Server.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/loan-005.mp3"></audio></div>
- <div class="transcript">→ Die Machine Learning Pipeline läuft auf dem neuen Server.</div>
- <div class="transcript">→ Judge 2: The machine learning pipeline life of the emnoyan server <span class="meta">(WER 0.56)</span></div>
- <div class="meta">loan-005 · WER 0.00</div>
+ <div class="text">Das Update wird über die Cloud eingespielt.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/loan-003.mp3"></audio></div>
+ <div class="transcript">→ Das Update wird über die Cloud eingespielt.</div>
+ <div class="transcript">→ Judge 2: Das Update wird über die Cloud eingespielt. <span class="meta">(WER 0.00)</span></div>
+ <div class="meta">loan-003 · WER 0.00</div>
 </div>
 <h2>longform</h2>
-<div class="case mid">
+<div class="case bad">
  <div class="text">Für das Rezept brauchen Sie 250 g Mehl, 3 Eier, 125 ml Milch, eine Prise Salz und 2 EL Zucker.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/long-002.mp3"></audio></div>
- <div class="transcript">→ Für das Rezept brauchen Sie Gramm Mehl, drei Eier, Milliliter Milch, eine Prise Salz und zwei</div>
+ <div class="transcript">→ Für das Rezept brauchen Sie Gramm Mehl, Eier, Milliliter Milch, eine Prise Salz und</div>
  <div class="transcript">→ Judge 2: Für das Rezept brauchen Sie 250 g Mehl, 3 Eier, 125 ml Milch, eine Prise Salz und 2 EL Zucker. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">long-002 · WER 0.22</div>
-</div>
-<div class="case good">
- <div class="text">Haben Sie die Unterlagen erhalten? Falls nicht, senden wir sie erneut. Bestätigen Sie bitte den Empfang!</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/long-003.mp3"></audio></div>
- <div class="transcript">→ Haben Sie die Unterlagen erhalten? Falls nicht, sendem Wär sie erneut. Bestätigen Sie bitte den Empfang.</div>
- <div class="transcript">→ Judge 2: Haben Sie die Unterlagen erhalten? Fast nicht. Senden wir sie erneut. Bestätigen Sie bitte den Empfang. <span class="meta">(WER 0.06)</span></div>
- <div class="meta">long-003 · WER 0.04</div>
+ <div class="meta">long-002 · WER 0.30</div>
 </div>
 <div class="case good">
  <div class="text">Obwohl die Ergebnisse, die das Team nach monatelanger Arbeit vorgelegt hatte, überzeugend waren, entschied sich der Vorstand, der seit Jahren auf Sicherheit bedacht war, gegen das Projekt.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/long-001.mp3"></audio></div>
- <div class="transcript">→ Obwohl die Ergebnisse, die das Team nach monatelanger Arbeit vorgelegt hatte, überzeugend waren, entschied sich der Vorstand, der seit Jahren auf Sicherheit bedacht war, gegen das Projekt.</div>
+ <div class="transcript">→ obwohl die Ergebnisse, die das Team nach monatelanger Arbeit vorgelegt hatte, überzeugend waren, entschied sich der Vorstand, der seit Jahren auf Sicherheit bedacht war, gegen das Projekt.</div>
  <div class="transcript">→ Judge 2: Obwohl die Ergebnisse, die das Team nach monatelanger Arbeit vorgelegt hatte, überzeugend waren, entschied sich der Vorstand, der seit Jahren auf Sicherheit bedacht war, gegen das Projekt. <span class="meta">(WER 0.00)</span></div>
  <div class="meta">long-001 · WER 0.00</div>
+</div>
+<div class="case good">
+ <div class="text">Haben Sie die Unterlagen erhalten? Falls nicht, senden wir sie erneut. Bestätigen Sie bitte den Empfang!</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/long-003.mp3"></audio></div>
+ <div class="transcript">→ Haben Sie die Unterlagen erhalten? Falls nicht, senden wir sie erneut. Bestätigen Sie bitte den Empfang.</div>
+ <div class="transcript">→ Judge 2: Haben Sie die Unterlagen erhalten? Fast nicht, senden wir sie erneut. Bestätigen Sie bitte den Empfang. <span class="meta">(WER 0.06)</span></div>
+ <div class="meta">long-003 · WER 0.00</div>
 </div>
 <div class="case good">
  <div class="text">„Kommen Sie herein“, sagte sie, „und schließen Sie bitte die Tür.“</div>
@@ -153,15 +153,15 @@
 <div class="case mid">
  <div class="text">Herr Nguyen und Frau Kowalczyk leiten die Abteilung gemeinsam.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/name-003.mp3"></audio></div>
- <div class="transcript">→ Herr Nieuwen und Frau Kowalczyk leiten die Abteilung gemeinsam.</div>
- <div class="transcript">→ Judge 2: Herr Nguyen und Frau Kovács lichten die Abtailleung gemeinsam. <span class="meta">(WER 0.44)</span></div>
- <div class="meta">name-003 · WER 0.19</div>
+ <div class="transcript">→ Herrmann, Dian und Frau Kowalczyk leiten die Abteilung gemeinsam.</div>
+ <div class="transcript">→ Judge 2: Herr Mundian und Frau Kawachuk leiten die Abteilung gemeinsam. <span class="meta">(WER 0.22)</span></div>
+ <div class="meta">name-003 · WER 0.26</div>
 </div>
 <div class="case mid">
  <div class="text">Der ICE hält in Fürth, Würzburg und Bietigheim-Bissingen.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/name-001.mp3"></audio></div>
- <div class="transcript">→ Der ICE hält in Fürth, Würzburg und Biethigheim-Bissingen.</div>
- <div class="transcript">→ Judge 2: Der ETE hält in Fürth, Würzburg und Bechtheim-Bissingen. <span class="meta">(WER 0.22)</span></div>
+ <div class="transcript">→ Der ITA hält in Fürth, Würzburg und Bietigheim-Bissingen.</div>
+ <div class="transcript">→ Judge 2: Der ITA hält in Fürth, Würzburg und Bietheim-Bissingen. <span class="meta">(WER 0.22)</span></div>
  <div class="meta">name-001 · WER 0.15</div>
 </div>
 <div class="case good">
@@ -173,81 +173,81 @@
 </div>
 <h2>normalization</h2>
 <div class="case bad">
- <div class="text">Wir liefern u. a. Ersatzteile, z. B. Filter.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-009.mp3"></audio></div>
- <div class="transcript">→ We&#x27;ll leave it in for a Z-Style 10 by Filter.</div>
- <div class="transcript">→ Judge 2: Wir liefern im Vor ersatzteile zum B-Filter. <span class="meta">(WER 0.38)</span></div>
- <div class="meta">norm-009 · WER 1.04</div>
-</div>
-<div class="case bad">
  <div class="text">Sie erreichen uns unter 0511 123456.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-007.mp3"></audio></div>
- <div class="transcript">→ Sie erreichen uns unter</div>
- <div class="transcript">→ Judge 2: Sie erreichen uns unter 05171 13356. <span class="meta">(WER 0.33)</span></div>
- <div class="meta">norm-007 · WER 0.69</div>
+ <div class="transcript">→ Sie erreichen uns unter null einundfünfzig auf tausendeinhundertzwischenfünfzehnundvierzigundfünfzehnundvierzig.</div>
+ <div class="transcript">→ Judge 2: Sie erreichen uns unter 051 auf 1100 Swix4 Fixendes. <span class="meta">(WER 0.69)</span></div>
+ <div class="meta">norm-007 · WER 0.77</div>
+</div>
+<div class="case bad">
+ <div class="text">Wir liefern u. a. Ersatzteile, z. B. Filter.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-009.mp3"></audio></div>
+ <div class="transcript">→ Wir liefern um A ersatzteile zum Bay Filter.</div>
+ <div class="transcript">→ Judge 2: Wir liefern UmA-Ersatzteile zum B-Filter. <span class="meta">(WER 0.38)</span></div>
+ <div class="meta">norm-009 · WER 0.71</div>
 </div>
 <div class="case bad">
  <div class="text">Der Motor leistet 150 kW bei 4.500 U/min.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-012.mp3"></audio></div>
- <div class="transcript">→ Diamantaur leistet 106 kW bei 4500 EPE min.</div>
- <div class="transcript">→ Judge 2: Der Motor liegt bei 150 kg bei 4500 EPE. <span class="meta">(WER 0.70)</span></div>
- <div class="meta">norm-012 · WER 0.57</div>
+ <div class="transcript">→ Der Motor leistet 150 Kilowatt bei 4500 Uhr nacht.</div>
+ <div class="transcript">→ Judge 2: Der Motor leistet 150 kW bei 4500 U/min. <span class="meta">(WER 0.20)</span></div>
+ <div class="meta">norm-012 · WER 0.70</div>
 </div>
 <div class="case bad">
  <div class="text">Die Müller GmbH &amp; Co. KG hat ihren Sitz in Hannover.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-010.mp3"></audio></div>
- <div class="transcript">→ Die Mela GmbH hat ihren Sitz in Hannover.</div>
- <div class="transcript">→ Judge 2: Die Miller GmbH &amp; Co. KG hat ihren Sitz in Hannover. <span class="meta">(WER 0.10)</span></div>
+ <div class="transcript">→ De Milla, Gembiha, &amp; Co. Kagi had their zitz in Hanover.</div>
+ <div class="transcript">→ Judge 2: Dimila Gembe, Ha &amp; Co. Kagi hatten Sitz in Hannover. <span class="meta">(WER 0.60)</span></div>
  <div class="meta">norm-010 · WER 0.57</div>
 </div>
 <div class="case bad">
  <div class="text">Das regelt § 12 Abs. 3 BGB.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-011.mp3"></audio></div>
- <div class="transcript">→ Das regelt Paragraph 12 Absatz 4a bei BGB.</div>
- <div class="transcript">→ Judge 2: Das regelt § 12 Abs. 2a bei BGB. <span class="meta">(WER 0.33)</span></div>
+ <div class="transcript">→ Das regelt Paragraph 12 Absatz 3 GB.</div>
+ <div class="transcript">→ Judge 2: Das regelt § 12 Abs. 3 BGB. <span class="meta">(WER 0.00)</span></div>
  <div class="meta">norm-011 · WER 0.56</div>
 </div>
 <div class="case bad">
  <div class="text">Der Vertrag endet am 01.07.2026.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-003.mp3"></audio></div>
  <div class="transcript">→ Der Vertrag endet am</div>
- <div class="transcript">→ Judge 2: Der Vertrag endet am 30.07.2026. <span class="meta">(WER 0.14)</span></div>
+ <div class="transcript">→ Judge 2: Der Vertrag endet am 1. November 2026. <span class="meta">(WER 0.29)</span></div>
  <div class="meta">norm-003 · WER 0.43</div>
-</div>
-<div class="case bad">
- <div class="text">Die Quote stieg um 4,5 %.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-015.mp3"></audio></div>
- <div class="transcript">→ Die Quote stieg um 4.5 Prozent.</div>
- <div class="transcript">→ Judge 2: Die Quote stieg um 4,5%. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">norm-015 · WER 0.42</div>
-</div>
-<div class="case bad">
- <div class="text">Die Sitzung dauert von 9:00 bis 10:30 Uhr.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-006.mp3"></audio></div>
- <div class="transcript">→ Die Sitzung dauert von 9 Uhr bis 10 Uhr 30.</div>
- <div class="transcript">→ Judge 2: Die Sitzung dauert von 9 Uhr bis 10:30 Uhr. <span class="meta">(WER 0.10)</span></div>
- <div class="meta">norm-006 · WER 0.40</div>
 </div>
 <div class="case bad">
  <div class="text">Dr. Weber wohnt in der Hauptstr. 5.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-008.mp3"></audio></div>
- <div class="transcript">→ Dr. Weber wohnt in der Hauptschule 5.</div>
- <div class="transcript">→ Judge 2: Dr. Weber wohnte in ihrer Hauptstraße 5. <span class="meta">(WER 0.43)</span></div>
+ <div class="transcript">→ Dr. Weber wohnt in der Hauptschule</div>
+ <div class="transcript">→ Judge 2: Dr. Weber wohnt in der Hauptstraße 5. <span class="meta">(WER 0.14)</span></div>
  <div class="meta">norm-008 · WER 0.38</div>
 </div>
 <div class="case bad">
  <div class="text">Karl V. regierte im 16. Jahrhundert.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-017.mp3"></audio></div>
- <div class="transcript">→ Carl Fohe regierte im sechzehnten Jahrhundert.</div>
- <div class="transcript">→ Judge 2: Karl V. regierte im 16. Jahrhundert. <span class="meta">(WER 0.00)</span></div>
+ <div class="transcript">→ Karl von Singh regierte im sechzehnten Jahrhundert.</div>
+ <div class="transcript">→ Judge 2: Karl von Xing regierte im 16. Jahrhundert. <span class="meta">(WER 0.33)</span></div>
  <div class="meta">norm-017 · WER 0.38</div>
 </div>
 <div class="case bad">
  <div class="text">Der Schaden beläuft sich auf 1.250.000 Euro.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-002.mp3"></audio></div>
- <div class="transcript">→ Der Schaden beläuft sich auf eintausendzwischenfünfzigtausend Euro.</div>
- <div class="transcript">→ Judge 2: Der Schaden belief sich auf 1.250.000 Euro. <span class="meta">(WER 0.11)</span></div>
- <div class="meta">norm-002 · WER 0.37</div>
+ <div class="transcript">→ Der Schaden beläuft sich auf Euro.</div>
+ <div class="transcript">→ Judge 2: Der Schaden beläuft sich auf 1.250.000 Euro. <span class="meta">(WER 0.00)</span></div>
+ <div class="meta">norm-002 · WER 0.33</div>
+</div>
+<div class="case bad">
+ <div class="text">Die Sitzung dauert von 9:00 bis 10:30 Uhr.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-006.mp3"></audio></div>
+ <div class="transcript">→ Die Sitzung dauert von 9 Uhr bis 10 Uhr.</div>
+ <div class="transcript">→ Judge 2: Die Sitzung dauert von 9:00 Uhr bis 10:30 Uhr. <span class="meta">(WER 0.10)</span></div>
+ <div class="meta">norm-006 · WER 0.33</div>
+</div>
+<div class="case bad">
+ <div class="text">Die Quote stieg um 4,5 %.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-015.mp3"></audio></div>
+ <div class="transcript">→ Die Quote steht um vier fünf Prozent.</div>
+ <div class="transcript">→ Judge 2: Die Quote stieg um 4,5 %. <span class="meta">(WER 0.00)</span></div>
+ <div class="meta">norm-015 · WER 0.33</div>
 </div>
 <div class="case mid">
  <div class="text">Der Zug fährt um 17:45 Uhr.</div>
@@ -257,25 +257,25 @@
  <div class="meta">norm-005 · WER 0.29</div>
 </div>
 <div class="case mid">
- <div class="text">Die Strecke ist 12,7 km lang.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-013.mp3"></audio></div>
- <div class="transcript">→ Die Strecke ist zwölf sieben Kilometer lang</div>
- <div class="transcript">→ Judge 2: Die Strecke ist 12,7 km lang. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">norm-013 · WER 0.25</div>
+ <div class="text">Ein Dreiviertel der Belegschaft stimmte zu, also 3/4.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-018.mp3"></audio></div>
+ <div class="transcript">→ Ein dreiviertel der Belegschaft stimmte zu. Iso, die vor</div>
+ <div class="transcript">→ Judge 2: Ein Dreiviertel der Beliehschaft stimmt dazu. Also dafür <span class="meta">(WER 0.50)</span></div>
+ <div class="meta">norm-018 · WER 0.22</div>
 </div>
 <div class="case mid">
  <div class="text">Am 3. Oktober ist Feiertag.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-004.mp3"></audio></div>
- <div class="transcript">→ Am 3. Oktober ist Feiertag.</div>
+ <div class="transcript">→ Am 13. Oktober ist Feiertag.</div>
  <div class="transcript">→ Judge 2: Am 3. Oktober ist Feiertag. <span class="meta">(WER 0.00)</span></div>
  <div class="meta">norm-004 · WER 0.20</div>
 </div>
 <div class="case mid">
- <div class="text">Das Gerät kostet 3,50 €.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-001.mp3"></audio></div>
- <div class="transcript">→ Das Gerät kostet drei Euro fünfzig.</div>
- <div class="transcript">→ Judge 2: Das Gerät kostet 3,50 €. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">norm-001 · WER 0.17</div>
+ <div class="text">Sie belegte den 2. Platz beim 100. Jubiläumslauf.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-014.mp3"></audio></div>
+ <div class="transcript">→ Sie belegte den zweiten Platz beim hundertten Jubiläumslauf.</div>
+ <div class="transcript">→ Judge 2: Sie belegte den zweiten Platz beim 100. Jubiläumslauf. <span class="meta">(WER 0.12)</span></div>
+ <div class="meta">norm-014 · WER 0.17</div>
 </div>
 <div class="case mid">
  <div class="text">Das Gebäude stammt aus dem Jahr 1897.</div>
@@ -285,39 +285,46 @@
  <div class="meta">norm-016 · WER 0.14</div>
 </div>
 <div class="case mid">
- <div class="text">Ein Dreiviertel der Belegschaft stimmte zu, also 3/4.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-018.mp3"></audio></div>
- <div class="transcript">→ Ein dreiviertel der Belegschaft stimmte zu, also drei Viertel.</div>
- <div class="transcript">→ Judge 2: Ein Dreiviertel der Belegschaft stimmte zu, also 3.000. <span class="meta">(WER 0.11)</span></div>
- <div class="meta">norm-018 · WER 0.11</div>
+ <div class="text">Die Strecke ist 12,7 km lang.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-013.mp3"></audio></div>
+ <div class="transcript">→ Die Strecke ist zwölf sieben Kilometer lang</div>
+ <div class="transcript">→ Judge 2: Die Strecke ist 12,7 km lang. <span class="meta">(WER 0.00)</span></div>
+ <div class="meta">norm-013 · WER 0.12</div>
 </div>
 <div class="case good">
- <div class="text">Sie belegte den 2. Platz beim 100. Jubiläumslauf.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-014.mp3"></audio></div>
- <div class="transcript">→ Sie belegte den zweiten Platz beim hundertten Jubiläumslauf.</div>
- <div class="transcript">→ Judge 2: Sie belegte den zweiten Platz beim 100 m Hürdenlauf. <span class="meta">(WER 0.38)</span></div>
- <div class="meta">norm-014 · WER 0.08</div>
+ <div class="text">Das Gerät kostet 3,50 €.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/norm-001.mp3"></audio></div>
+ <div class="transcript">→ Das Gerät kostet drei Euro fünfzig.</div>
+ <div class="transcript">→ Judge 2: Das Gerät kostet 3,50 €. <span class="meta">(WER 0.00)</span></div>
+ <div class="meta">norm-001 · WER 0.00</div>
 </div>
 <h2>umlaut</h2>
 <div class="case bad">
- <div class="text">Er trank die Maß Helles in Maßen.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/uml-006.mp3"></audio></div>
- <div class="transcript">→ Er trank die maßheilisch imassen.</div>
- <div class="transcript">→ Judge 2: Er trank die Maß Helles im Maßen. <span class="meta">(WER 0.14)</span></div>
- <div class="meta">uml-006 · WER 0.62</div>
-</div>
-<div class="case bad">
  <div class="text">Schon am Morgen war es schön warm.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/uml-001.mp3"></audio></div>
- <div class="transcript">→ Shona morgen bei Schönborn.</div>
- <div class="transcript">→ Judge 2: Schon am Morgen war es schon warm. <span class="meta">(WER 0.14)</span></div>
- <div class="meta">uml-001 · WER 0.52</div>
+ <div class="transcript">→ Schon am Morgengrauen, was schon vom</div>
+ <div class="transcript">→ Judge 2: So am Morgen war es schön warm. <span class="meta">(WER 0.14)</span></div>
+ <div class="meta">uml-001 · WER 0.57</div>
+</div>
+<div class="case bad">
+ <div class="text">Er trank die Maß Helles in Maßen.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/uml-006.mp3"></audio></div>
+ <div class="transcript">→ Er trank die Maas, helles in Massen.</div>
+ <div class="transcript">→ Judge 2: Er trank die Masse, helles im Maßen. <span class="meta">(WER 0.29)</span></div>
+ <div class="meta">uml-006 · WER 0.43</div>
+</div>
+<div class="case mid">
+ <div class="text">Die Mütter besuchten ihre Mutter.</div>
+ <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/uml-004.mp3"></audio></div>
+ <div class="transcript">→ Die Mutter besuchte ihre Mutter.</div>
+ <div class="transcript">→ Judge 2: Die Mitha besuchte ihn ihrer Mutter. <span class="meta">(WER 0.80)</span></div>
+ <div class="meta">uml-004 · WER 0.13</div>
 </div>
 <div class="case mid">
  <div class="text">In der Höhle war es dunkel wie in der Hölle.</div>
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/uml-003.mp3"></audio></div>
- <div class="transcript">→ In der Höhle war es dunkel wie in der Höhle.</div>
- <div class="transcript">→ Judge 2: In der Höhle war es dunkel wie in der Hölle. <span class="meta">(WER 0.00)</span></div>
+ <div class="transcript">→ In der Höhle war es dunkel wie in der Helle.</div>
+ <div class="transcript">→ Judge 2: In der Höhle war es dunkel wie in der Helle. <span class="meta">(WER 0.10)</span></div>
  <div class="meta">uml-003 · WER 0.10</div>
 </div>
 <div class="case mid">
@@ -332,13 +339,6 @@
  <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/uml-002.mp3"></audio></div>
  <div class="transcript">→ Sie drücken den Knopf, dann drucken wir das Dokument.</div>
  <div class="transcript">→ Judge 2: Sie drücken den Knopf, dann drücken wir das Dokument. <span class="meta">(WER 0.11)</span></div>
- <div class="meta">uml-002 · WER 0.00</div>
-</div>
-<div class="case good">
- <div class="text">Die Mütter besuchten ihre Mutter.</div>
- <div><audio controls preload="none" src="audio/qwen3-tts-12hz-1-7b-customvoice-serena/uml-004.mp3"></audio></div>
- <div class="transcript">→ Die Mütter besuchten ihre Mutter.</div>
- <div class="transcript">→ Judge 2: Die Mütter besuchten ihre Mutter. <span class="meta">(WER 0.00)</span></div>
- <div class="meta">uml-004 · WER 0.00</div>
+ <div class="meta">uml-002 · WER 0.07</div>
 </div>
 <footer>Alle Clips sind KI-generiert (synthetische Sprache). Die Lizenzangaben sind Hinweise auf die jeweiligen Modell-Lizenzen, keine Rechtsberatung — verbindlich sind allein die Lizenztexte der Modellanbieter.</footer></body></html>

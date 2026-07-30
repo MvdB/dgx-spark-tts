@@ -109,7 +109,8 @@ def stt_model_id(stt_url: str) -> str:
 STT_PROMPT = "transcribe the speech with proper punctuation and capitalization."
 
 
-def transcribe(stt_url: str, model_id: str, wav: bytes, timeout: int = 300) -> str:
+def transcribe(stt_url: str, model_id: str, wav: bytes, timeout: int = 300,
+               temperature: float = 0.0) -> str:
     """ASR via chat/completions mit Casing-Prompt (granite-speech-4.1-2b:
     Interpunktion + Truecasing gibt es nur über diesen Prompt, der
     /v1/audio/transcriptions-Default liefert lowercase)."""
@@ -119,7 +120,7 @@ def transcribe(stt_url: str, model_id: str, wav: bytes, timeout: int = 300) -> s
     r = requests.post(
         f"{stt_url}/v1/chat/completions",
         json={
-            "model": model_id, "temperature": 0.0, "max_tokens": 512,
+            "model": model_id, "temperature": temperature, "max_tokens": 512,
             "messages": [{"role": "user", "content": [
                 {"type": "audio_url", "audio_url": {"url": f"data:audio/wav;base64,{b64}"}},
                 {"type": "text", "text": STT_PROMPT},
@@ -129,6 +130,29 @@ def transcribe(stt_url: str, model_id: str, wav: bytes, timeout: int = 300) -> s
     )
     r.raise_for_status()
     return r.json()["choices"][0]["message"]["content"].strip()
+
+
+def looks_runaway(transcript: str, audio_seconds: float) -> bool:
+    """ASR-Decoder-Schleife: mehr Transkript, als in die Audiodauer an Sprache
+    passt (Deutsch ~15 Zeichen/s inkl. Leerzeichen; Faktor 2 Toleranz).
+    Beispiel aus der Praxis: granite schrieb 1538 Zeichen "null. null. …"
+    zu 3.7 s Audio — physikalisch unmöglich, reine Judge-Halluzination."""
+    return audio_seconds > 0 and len(transcript) > max(80.0, 30.0 * audio_seconds)
+
+
+def transcribe_guarded(stt_url: str, model_id: str, wav: bytes,
+                       audio_seconds: float) -> tuple[str, bool]:
+    """Transkription mit Runaway-Schutz. Bei temperature 0.0 ist die Schleife
+    deterministisch — ein Retry mit leichtem Sampling bricht sie meist.
+    Liefert (transcript, runaway): runaway=True nur, wenn auch der Retry
+    davonläuft; dann wird das kürzere Transkript behalten."""
+    transcript = transcribe(stt_url, model_id, wav)
+    if not looks_runaway(transcript, audio_seconds):
+        return transcript, False
+    retry = transcribe(stt_url, model_id, wav, temperature=0.3)
+    if not looks_runaway(retry, audio_seconds):
+        return retry, False
+    return min(transcript, retry, key=len), True
 
 
 # ── Hauptlauf ────────────────────────────────────────────────────────────────
@@ -187,7 +211,8 @@ def main() -> int:
                                            model=tts_payload_model)
                     suffix = f"_r{rep}" if args.repeats > 1 else ""
                     (out / "audio" / f"{case['id']}{suffix}.wav").write_bytes(wav)
-                    transcript = transcribe(args.stt, model_id, wav)
+                    transcript, runaway = transcribe_guarded(
+                        args.stt, model_id, wav, meta["audio_duration"])
                     hyp = normalize(transcript)
                     scored = [
                         {"ref": ref, "wer": round(wer(hyp, normalize(ref)), 4),
@@ -195,16 +220,28 @@ def main() -> int:
                         for ref in case["refs"]
                     ]
                     best = min(scored, key=lambda s: s["wer"])
+                    # wer/cer bleiben ungekappt (Diagnose); *_capped begrenzt
+                    # einen Ausreisser auf Totalersetzungsniveau, damit er den
+                    # Mittelwert nicht dominieren kann (WER ist nach oben offen).
                     row["repeats"].append({
                         "transcript": transcript, "hyp_normalized": hyp,
                         "best_ref": best["ref"], "wer": best["wer"], "cer": best["cer"],
+                        "wer_capped": min(best["wer"], 1.0),
+                        "cer_capped": min(best["cer"], 1.0),
+                        "asr_runaway": runaway,
                         "wall_time": round(time.time() - t0, 2), **meta})
+                    if runaway:
+                        print(f"    {case['id']}_r{rep}: ASR-Runaway auch nach Retry "
+                              f"({len(transcript)} Zeichen / {meta['audio_duration']}s)",
+                              file=sys.stderr)
                 reps = row["repeats"]
                 # Fall-Score: Mittel über Wiederholungen; Min separat, um
                 # Modellfähigkeit von Sampling-Glück zu trennen.
                 row.update(
                     wer=round(sum(r["wer"] for r in reps) / len(reps), 4),
                     cer=round(sum(r["cer"] for r in reps) / len(reps), 4),
+                    wer_capped=round(sum(r["wer_capped"] for r in reps) / len(reps), 4),
+                    cer_capped=round(sum(r["cer_capped"] for r in reps) / len(reps), 4),
                     wer_min=min(r["wer"] for r in reps),
                     wer_max=max(r["wer"] for r in reps),
                     transcript=reps[0]["transcript"],
@@ -232,13 +269,23 @@ def main() -> int:
             "n_total": len(results), "n_ok": len(ok),
             "n_error": len(results) - len(ok),
             "wer_mean": round(sum(r["wer"] for r in ok) / max(len(ok), 1), 4),
+            "wer_capped_mean": round(
+                sum(r["wer_capped"] for r in ok) / max(len(ok), 1), 4),
             "wer_best_mean": round(
                 sum(r.get("wer_min", r["wer"]) for r in ok) / max(len(ok), 1), 4),
             "cer_mean": round(sum(r["cer"] for r in ok) / max(len(ok), 1), 4),
+            "cer_capped_mean": round(
+                sum(r["cer_capped"] for r in ok) / max(len(ok), 1), 4),
             "wer_by_category": {
                 c: round(sum(r["wer"] for r in rs) / len(rs), 4)
                 for c, rs in sorted(by_cat.items())
             },
+            "wer_capped_by_category": {
+                c: round(sum(r["wer_capped"] for r in rs) / len(rs), 4)
+                for c, rs in sorted(by_cat.items())
+            },
+            "n_asr_runaway": sum(
+                1 for r in ok for rep in r["repeats"] if rep.get("asr_runaway")),
             "rtf_mean": round(
                 sum(r["synthesis_time"] / max(r["audio_duration"], 1e-6) for r in ok)
                 / max(len(ok), 1), 3),

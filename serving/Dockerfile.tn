@@ -11,7 +11,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential wget \
     && rm -rf /var/lib/apt/lists/*
 
-RUN wget -q https://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.8.3.tar.gz \
+# openfst.org liefert sporadisch HTTP-Fehler (hat einen Nachtlauf gekostet):
+# mehrfach versuchen, danach auf den PyPI-Spiegel des pynini-Sdist ausweichen.
+RUN (wget -q --tries=5 --waitretry=20 --retry-connrefused \
+        --retry-on-http-error=403,429,500,502,503,504 \
+        https://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.8.3.tar.gz \
+     || wget -q --tries=5 --waitretry=20 \
+        https://mirror.linux-ia64.org/gnu/openfst/openfst-1.8.3.tar.gz) \
     && tar xzf openfst-1.8.3.tar.gz && rm openfst-1.8.3.tar.gz \
     && cd openfst-1.8.3 \
     && ./configure --enable-grm --enable-far --enable-pdt --enable-mpdt \

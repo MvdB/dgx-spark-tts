@@ -146,7 +146,9 @@ def discover_runs() -> list[dict]:
             "rows": [json.loads(l) for l in
                      (d / "results_raw.jsonl").read_text(encoding="utf-8").splitlines()],
         }
-    return sorted(by_combo.values(), key=lambda r: r["summary"].get("wer_mean") or 9)
+    return sorted(by_combo.values(),
+                  key=lambda r: r["summary"].get("wer_capped_mean")
+                  or r["summary"].get("wer_mean") or 9)
 
 
 def encode_clips(run: dict) -> int:
@@ -181,7 +183,8 @@ def model_page(run: dict) -> None:
              f'<p class="meta">Modell: {html.escape(str(s["tts_model"]))} · '
              f'Stimme: {html.escape(str(s["voice"]))} · '
              f'STT-Judge: {html.escape(str(s.get("stt_model", "?")))} · '
-             f'WER {fmt(s.get("wer_mean"))} · CER {fmt(s.get("cer_mean"))} · '
+             f'WER {fmt(s.get("wer_capped_mean", s.get("wer_mean")))} (Cap 1.0) · '
+             f'CER {fmt(s.get("cer_capped_mean", s.get("cer_mean")))} · '
              f'RTF {fmt(s.get("rtf_mean"), 2)} · '
              f'Lizenz: {html.escape(run["license"])} · '
              f'Lauf: {html.escape(run["res_dir"].name)}</p>',
@@ -227,11 +230,20 @@ def model_page(run: dict) -> None:
 def index_page(runs: list[dict]) -> None:
     cats = sorted({c for run in runs
                    for c in (run["summary"].get("wer_by_category") or {})})
-    metrics = ([("WER (Mittel)", lambda s: s.get("wer_mean")),
+    # Leitmetrik ist die je Wiederholung bei 1.0 gekappte WER — die rohe WER
+    # ist nach oben offen, ein einziger ASR-Runaway (WER 36 bei 3.7 s Audio)
+    # wuerde sonst den Mittelwert dominieren. Fallback auf wer_mean fuer
+    # Laeufe vor Einfuehrung des Caps.
+    metrics = ([("WER (Mittel, Cap 1.0)",
+                 lambda s: s.get("wer_capped_mean", s.get("wer_mean"))),
+                ("WER (Mittel, ungekappt)", lambda s: s.get("wer_mean")),
                 ("WER (best-of-N)", lambda s: s.get("wer_best_mean")),
-                ("CER", lambda s: s.get("cer_mean")),
+                ("CER (Cap 1.0)",
+                 lambda s: s.get("cer_capped_mean", s.get("cer_mean"))),
                 ("Realtime-Faktor", lambda s: s.get("rtf_mean"))] +
-               [(f"WER {c}", lambda s, c=c: (s.get("wer_by_category") or {}).get(c))
+               [(f"WER {c}",
+                 lambda s, c=c: (s.get("wer_capped_by_category")
+                                 or s.get("wer_by_category") or {}).get(c))
                 for c in cats])
 
     head = "".join(f'<th><a href="{r["slug"]}.html">{html.escape(r["title"])}</a></th>'
@@ -286,6 +298,9 @@ Judge: {html.escape(str(n.get("stt_model", "?")))} mit Casing-Prompt. Je Modell/
 jeweils neueste vollständige Lauf gezeigt (Spalten nach WER sortiert, bester Wert je Zeile
 hervorgehoben; niedriger = besser). Die WER enthält auch STT-Fehler (obere Schranke des
 TTS-Fehlers) — Kategorien-<i>Deltas</i> sind aussagekräftiger als Absolutwerte.
+Leitmetrik ist die je Wiederholung bei 1.0 gekappte WER (Totalersetzung); die Differenz
+zur ungekappten Zeile zeigt, wo einzelne Wiederholungen entgleist sind (ASR-Decoder-Schleifen
+oder TTS-Loop-Babble erzeugen sonst WER&nbsp;≫&nbsp;1 und dominieren den Mittelwert).
 Spaltentitel führen zur Abhörseite mit allen Clips.</p>
 {judge_note}
 <div class="tablewrap"><table><tr><th>Metrik</th>{head}</tr>{"".join(body_rows)}</table></div>

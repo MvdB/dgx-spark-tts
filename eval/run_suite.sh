@@ -8,13 +8,25 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 REPO="$PWD"
-DATE=$(date +%F)
+# SUITE_DATE erlaubt einen abweichenden Ergebnis-Praefix (z. B. das Morgen-
+# Datum fuer einen Nachtlauf, damit die heutigen Ergebnisse nicht
+# ueberschrieben werden, solange der neue Lauf nicht durch ist).
+DATE=${SUITE_DATE:-$(date +%F)}
 STT=http://127.0.0.1:8000
 STT2=http://127.0.0.1:8006
 LOG="results/suite_${DATE}.log"
 mkdir -p results
 
 log() { echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }
+
+# Preflight: ohne granite-Judge ist die ganze Nacht verloren — sofort und
+# laut abbrechen. Der Zweit-Judge ist nur fuers Rescoring noetig (Warnung).
+if ! curl -sf --max-time 10 "$STT/v1/models" >/dev/null; then
+  log "ABBRUCH: granite-Judge auf $STT nicht erreichbar"
+  exit 1
+fi
+curl -sf --max-time 10 "$STT2/v1/models" >/dev/null \
+  || log "WARNUNG: Zweit-Judge auf $STT2 nicht erreichbar — Rescoring wird fehlschlagen"
 
 wait_ready() { # port
   for _ in $(seq 1 60); do
@@ -27,6 +39,12 @@ wait_ready() { # port
 
 run_config() { # name port voice
   local name=$1 port=$2 voice=$3 out="results/${DATE}_suite_${1}"
+  # Stirbt der granite-Judge mitten in der Nacht, ist jede weitere
+  # Konfiguration wertlos — dann sofort raus statt stundenlang Fehler loggen.
+  if ! curl -sf --max-time 10 "$STT/v1/models" >/dev/null; then
+    log "ABBRUCH: granite-Judge auf $STT weggebrochen (vor $name)"
+    exit 1
+  fi
   if ! wait_ready "$port"; then log "FEHLER: $name — Server auf :$port nicht bereit, uebersprungen"; return 1; fi
   log "START $name (voice=$voice)"
   if python3 eval/roundtrip_eval.py --testset testset/german_tts_v1.jsonl \
@@ -34,7 +52,7 @@ run_config() { # name port voice
        --repeats 3 --out "$out" >> "$LOG" 2>&1; then
     python3 eval/rescore_with_judge.py --stt2 "$STT2" "$out" >> "$LOG" 2>&1 \
       || log "WARNUNG: $name — Rescoring fehlgeschlagen"
-    log "FERTIG $name: $(python3 -c "import json; s=json.load(open('$out/summary.json')); print(f\"WER {s['wer_mean']}\")" 2>/dev/null)"
+    log "FERTIG $name: $(python3 -c "import json; s=json.load(open('$out/summary.json')); print(f\"WER {s.get('wer_capped_mean', s['wer_mean'])} (Cap) / {s['wer_mean']} (roh), ASR-Runaways: {s.get('n_asr_runaway', 0)}\")" 2>/dev/null)"
   else
     log "FEHLER: $name — Eval fehlgeschlagen"
   fi
@@ -45,7 +63,13 @@ run_config() { # name port voice
 log "stoppe evtl. laufende TTS-Container"
 docker stop qwen3-tts chatterbox-tts voxcpm2 voxtral-tts magpie-tts >> "$LOG" 2>&1 || true
 
-# TN-Image parallel bauen (wird erst fuer die letzte Konfiguration gebraucht)
+# Magpie-Basisimage aktualisieren (server.py ist eingebacken; bei
+# unveraendertem Code ist das ein Cache-Hit in Sekunden). Danach das
+# TN-Image im Hintergrund darauf aufbauen (Quell-Build, ~30-40 min —
+# wird erst fuer die letzte Konfiguration gebraucht).
+log "Magpie-Basisimage-Build (Cache-Hit, falls unveraendert)"
+( cd serving && docker build -t spark-magpie-tts:v1 . ) >> "$LOG" 2>&1 \
+  || log "WARNUNG: Magpie-Basisimage-Build fehlgeschlagen — laufe mit dem alten Image weiter"
 log "TN-Image-Build startet im Hintergrund"
 ( cd serving && docker build -t spark-magpie-tts:v1-tn -f Dockerfile.tn . \
     > "$REPO/results/tn_build_${DATE}.log" 2>&1 ) &

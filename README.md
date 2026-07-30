@@ -36,6 +36,10 @@ IMAGE=spark-magpie-tts:v1-tn ./run_server.sh          # port 8001
 docker build -t spark-qwen3-tts:v1 -f Dockerfile.qwen3tts .
 ./run_qwen3tts.sh                                     # port 8002
 MODEL_DIR=Qwen--Qwen3-TTS-12Hz-1.7B-VoiceDesign ./run_qwen3tts.sh
+# VoiceDesign voices are instruct texts, selected by name via the voice field:
+#   curl … -d '{"input":"…","voice":"de_male_news","language":"de"}'
+# Presets: de_female_news, de_male_news, de_female_calm. QWEN_TTS_VOICE_DESIGN
+# sets the default, QWEN_TTS_VOICE_INSTRUCT overrides it with free text.
 
 curl -s http://127.0.0.1:8002/v1/audio/speech \
   -H 'Content-Type: application/json' \
@@ -136,6 +140,11 @@ stochastically; single runs swing small categories by ±0.1 WER). Per case the
 mean plus `wer_min`/`wer_max` are reported, the summary adds `wer_best_mean`.
 `--category` restricts to selected categories.
 
+Even at `--repeats 3` the overall mean still moves by about **0.02 WER between
+runs** — measured directly by running the same Qwen VoiceDesign voice twice
+with a byte-identical instruct: 0.182 and 0.160. Treat differences below that
+as noise rather than a ranking.
+
 Outputs (raw data first, summary fail-safe afterwards):
 
 - `results_raw.jsonl` — per-case transcripts, WER/CER per ref and repeat
@@ -148,6 +157,18 @@ Caveat: measured WER includes STT errors (upper bound of the TTS error) —
 interpret per-category *deltas* rather than absolute values. Word-level WER
 also over-penalizes German compounds when the STT hyphenates them; check CER
 for that category.
+
+WER is unbounded above, and a single degenerate transcript can dominate the
+mean: the judge occasionally enters a repetition loop (1500+ characters of
+"null. null. …" for 3.7 s of audio — physically impossible speech), and
+VoxCPM2 occasionally produces off-text loop babble (a real TTS failure).
+The evaluator therefore (a) detects implausible transcript-length/audio-
+duration ratios and retries the transcription once with light sampling
+(`temperature 0.3` breaks the deterministic loop), flagging persistent cases
+as `asr_runaway`, and (b) reports `wer_capped_mean` alongside the raw mean,
+capping each repeat at 1.0 (total substitution). The capped WER is the
+headline metric on the docs pages; the gap between capped and raw shows how
+much individual repeats derailed.
 
 ## docs/ — published comparison
 

@@ -34,14 +34,46 @@ MODEL_PATH = os.environ.get(
 ATTN_IMPL = os.environ.get("QWEN_TTS_ATTN", "sdpa")  # flash_attention_2 wenn verfügbar
 
 # VoiceDesign-Modelle haben keine festen Sprecher — die Stimme wird per
-# instruct-Beschreibung entworfen. Default: deutsche Muttersprachlerin.
+# instruct-Beschreibung entworfen. Damit ein Lauf reproduzierbar und in der
+# Auswertung unterscheidbar bleibt, gibt es benannte Presets: das voice-Feld
+# waehlt das Preset, ein freies instruct im Request sticht es weiterhin.
+# (Die Beschreibungen stehen bewusst auf Deutsch — die Modellkarte gibt die
+# instruct-Beispiele in der Zielsprache an.)
 VOICE_DESIGN_MODE = "voicedesign" in MODEL_PATH.lower().replace("-", "")
-DEFAULT_VOICE_INSTRUCT = os.environ.get(
-    "QWEN_TTS_VOICE_INSTRUCT",
-    "Klare, professionelle deutsche Frauenstimme mittleren Alters. "
-    "Muttersprachliches Hochdeutsch, neutrale Nachrichtensprecher-Intonation, "
-    "praezise Artikulation.",
+
+VOICE_DESIGN_PRESETS = {
+    "de_female_news":
+        "Klare, professionelle deutsche Frauenstimme mittleren Alters. "
+        "Muttersprachliches Hochdeutsch, neutrale Nachrichtensprecher-Intonation, "
+        "praezise Artikulation.",
+    "de_male_news":
+        "Ruhige, sonore deutsche Maennerstimme mittleren Alters. "
+        "Muttersprachliches Hochdeutsch, sachliche Nachrichtensprecher-Intonation, "
+        "deutliche Artikulation, maessiges Sprechtempo.",
+    "de_female_calm":
+        "Freundliche deutsche Frauenstimme, warm und ruhig. Muttersprachliches "
+        "Hochdeutsch, langsames bis mittleres Sprechtempo, sehr deutliche "
+        "Aussprache jeder Silbe, keine Dialektfaerbung.",
+}
+DEFAULT_DESIGN_VOICE = os.environ.get("QWEN_TTS_VOICE_DESIGN", "de_female_news")
+
+# Freitext-Override: gewinnt gegen die Presets (Ad-hoc-Experimente).
+VOICE_INSTRUCT_OVERRIDE = os.environ.get("QWEN_TTS_VOICE_INSTRUCT", "")
+DEFAULT_VOICE_INSTRUCT = (
+    VOICE_INSTRUCT_OVERRIDE
+    or VOICE_DESIGN_PRESETS.get(DEFAULT_DESIGN_VOICE)
+    or VOICE_DESIGN_PRESETS["de_female_news"]
 )
+
+
+def design_instruct(voice: str) -> str:
+    """instruct fuer eine VoiceDesign-Stimme. 'design' bleibt als historischer
+    Alias fuer die Default-Stimme erhalten (aeltere Laeufe/Skripte)."""
+    if VOICE_INSTRUCT_OVERRIDE:
+        return VOICE_INSTRUCT_OVERRIDE
+    if voice in ("design", ""):
+        return DEFAULT_VOICE_INSTRUCT
+    return VOICE_DESIGN_PRESETS[voice]
 
 # ISO-Kürzel -> Qwen-Sprachname (Auszug; get_supported_languages liefert Namen)
 LANG_MAP = {
@@ -80,7 +112,8 @@ def load_model() -> None:
         attn_implementation=ATTN_IMPL,
     )
     if VOICE_DESIGN_MODE:
-        speakers = ["design"]  # Pseudo-Stimme; tatsächliche Stimme kommt aus instruct
+        # Presets sind die waehlbaren "Stimmen"; 'design' bleibt als Alias.
+        speakers = sorted(VOICE_DESIGN_PRESETS) + ["design"]
     else:
         speakers = [s.lower() for s in model.get_supported_speakers()]
     languages = list(model.get_supported_languages())
@@ -90,7 +123,13 @@ def load_model() -> None:
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok" if model is not None else "loading", "model": MODEL_PATH}
+    h = {"status": "ok" if model is not None else "loading", "model": MODEL_PATH}
+    if VOICE_DESIGN_MODE:
+        # Die entworfene Stimme gehoert zur Konfiguration — ohne sie ist ein
+        # VoiceDesign-Ergebnis nicht nachvollziehbar.
+        h["voice_design_default"] = DEFAULT_DESIGN_VOICE
+        h["voice_instruct_override"] = bool(VOICE_INSTRUCT_OVERRIDE)
+    return h
 
 
 @app.get("/v1/voices")
@@ -105,7 +144,7 @@ def speech(req: SpeechRequest) -> Response:
     if req.response_format != "wav":
         raise HTTPException(400, f"Nur 'wav' unterstützt, nicht '{req.response_format}'")
     voice = req.voice.lower()
-    if not VOICE_DESIGN_MODE and voice not in speakers:
+    if voice not in speakers:
         raise HTTPException(400, f"Unbekannte Stimme '{req.voice}'. Verfügbar: {speakers}")
     lang = LANG_MAP.get(req.language.lower(), req.language)
 
@@ -114,7 +153,7 @@ def speech(req: SpeechRequest) -> Response:
         if VOICE_DESIGN_MODE:
             wavs, sr = model.generate_voice_design(
                 text=req.input, language=lang,
-                instruct=req.instruct or DEFAULT_VOICE_INSTRUCT,
+                instruct=req.instruct or design_instruct(voice),
             )
         else:
             kwargs = {"instruct": req.instruct} if req.instruct else {}

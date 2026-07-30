@@ -79,8 +79,10 @@ def main() -> int:
             # granite-r0-Transkript liegt schon vor (altes Schema: top-level)
             t1 = (r.get("repeats") or [r])[0].get("transcript", "")
             t2 = transcribe_file(args.stt2, model2, wav)
-            w1 = best_wer(t1, c["refs"], c["text"])
-            w2 = best_wer(t2, c["refs"], c["text"])
+            # gekappt bei 1.0 wie im Haupt-Eval: ein ASR-Runaway (WER >> 1)
+            # darf den Mittelwert nicht dominieren
+            w1 = min(best_wer(t1, c["refs"], c["text"]), 1.0)
+            w2 = min(best_wer(t2, c["refs"], c["text"]), 1.0)
             w1s.append(w1)
             w2s.append(w2)
             cat.setdefault(c["category"], []).append((w1, w2))
@@ -91,7 +93,7 @@ def main() -> int:
             "run": res_dir.name,
             "judge1": summary.get("stt_model"),
             "judge2": model2,
-            "protocol": "best WER over refs + normalized original text, repeat r0 only",
+            "protocol": "best WER over refs + normalized original text, repeat r0 only, capped at 1.0",
             "wer_judge1_mean": round(sum(w1s) / len(w1s), 4),
             "wer_judge2_mean": round(sum(w2s) / len(w2s), 4),
             "wer_by_category": {
