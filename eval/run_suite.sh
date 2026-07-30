@@ -89,6 +89,8 @@ run_config qwen-vd-de-female-news 8002 de_female_news
 run_config qwen-vd-de-male-news   8002 de_male_news
 run_config qwen-vd-de-female-calm 8002 de_female_calm
 run_config qwen-vd-de-male-young  8002 de_male_young
+run_config qwen-vd-de-male-coach  8002 de_male_coach
+run_config qwen-vd-de-female-coach 8002 de_female_coach
 docker stop qwen3-tts >> "$LOG" 2>&1
 
 # ── Chatterbox: default + de_f1 ─────────────────────────────────────────────

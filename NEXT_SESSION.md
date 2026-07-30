@@ -1,5 +1,58 @@
 # Offene Punkte für die nächste Session
 
+## ZUERST: Schulungsstimmen abschließen (Lauf war beim Sessionende noch aktiv)
+
+Zwei neue VoiceDesign-Presets für Schulungstexte sind angelegt und committet,
+ihre Evaluation lief beim Sessionende noch (abgekoppelter Prozess, Log:
+`results/coach_eval.log`, Marker `COACH_KETTE_FERTIG`):
+
+- `de_male_coach` — "Angenehme deutsche Männerstimme, mittlere Tonlage, warm und
+  motivierend … freundliche Energie ohne Werbestimme, kein Pathos."
+- `de_female_coach` — "Freundliche deutsche Frauenstimme einer erfahrenen
+  Trainerin, Mitte dreißig … kein Vorlese-Singsang, keine gedehnten Vokale."
+
+**Zu tun:** `results/coach_eval.log` prüfen, bei Erfolg `eval/make_docs.py`
+laufen lassen (die Kette macht das selbst, aber nur wenn sie durchkam) und
+`docs/` committen. Beide Stimmen stehen bereits in `eval/run_suite.sh`, sind
+also ab dem nächsten Suite-Lauf automatisch dabei.
+
+**Michael hat die Hörproben noch nicht bewertet.** Je drei männliche und
+weibliche Varianten wurden erzeugt (Text und Beschreibungen unten). Gewählt
+habe ich unter Zeitdruck B (männlich) und F (weiblich) — die zügigsten mit
+passendem Charakter. Falls er eine andere bevorzugt: Beschreibung in
+`VOICE_DESIGN_PRESETS` (serving/server_qwen3tts.py) tauschen, Image neu bauen,
+Eval nachziehen. Die Hörproben lagen im Scratchpad und sind nach Sessionende
+weg — bei Bedarf mit den Beschreibungen unten neu erzeugen.
+
+Sprechtempo der Kandidaten (s/Zeichen; die bisherigen Presets liegen bei 0.099):
+
+| Variante | Charakter | Tempo |
+|---|---|---|
+| A | männlich, wacher Erklärton | 0.0596 |
+| **B** | **männlich, warm-motivierend (gewählt)** | **0.0581** |
+| C | männlich, souverän-zugewandt | 0.0667 |
+| D | weiblich, wacher Erklärton | 0.0649 |
+| E | weiblich, warm-motivierend | 0.0735 |
+| **F** | **weiblich, souverän-zugewandt (gewählt)** | **0.0615** |
+
+Beschreibungstexte aller sechs Varianten:
+
+```json
+{
+  "A_trainer_wach": "Sympathische deutsche Männerstimme, Anfang dreißig, freundlich und wach. Muttersprachliches Hochdeutsch, zugewandter Erklärton wie in einer guten Online-Schulung, zügiges Sprechtempo, lebendige aber ruhige Betonung, Satzenden fallen ab.",
+  "B_warm_motivierend": "Angenehme deutsche Männerstimme, mittlere Tonlage, warm und motivierend. Muttersprachliches Hochdeutsch, wacher Trainerton, zügiges Sprechtempo, deutliche Artikulation, freundliche Energie ohne Werbestimme, kein Pathos.",
+  "C_souveraen_zugewandt": "Freundliche deutsche Männerstimme eines erfahrenen Trainers, Mitte dreißig. Muttersprachliches Hochdeutsch, ruhig-souverän und zugewandt, zügig ohne Hast, natürliche Betonungswechsel, kein Vorlese-Singsang, keine gedehnten Vokale.",
+  "D_trainerin_wach": "Sympathische deutsche Frauenstimme, Anfang dreißig, freundlich und wach. Muttersprachliches Hochdeutsch, zugewandter Erklärton wie in einer guten Online-Schulung, zügiges Sprechtempo, lebendige aber ruhige Betonung, Satzenden fallen ab.",
+  "E_warm_motivierend": "Angenehme deutsche Frauenstimme, mittlere Tonlage, warm und motivierend. Muttersprachliches Hochdeutsch, wacher Trainerton, zügiges Sprechtempo, deutliche Artikulation, freundliche Energie ohne Werbestimme, kein Pathos.",
+  "F_souveraen_zugewandt": "Freundliche deutsche Frauenstimme einer erfahrenen Trainerin, Mitte dreißig. Muttersprachliches Hochdeutsch, ruhig-souverän und zugewandt, zügig ohne Hast, natürliche Betonungswechsel, kein Vorlese-Singsang, keine gedehnten Vokale."
+}
+```
+
+Vorlesetext der Hörproben: „Bevor wir zum nächsten Modul kommen, halten wir kurz
+fest, was Sie bereits geschafft haben: Sie kennen jetzt die drei Grundprinzipien
+und können sie an einem eigenen Beispiel anwenden. Das ist genau der Punkt, an
+dem es erfahrungsgemäß Spaß zu machen beginnt."
+
 Stand: 2026-07-30, Ende der Session. Der komplette Suite-Neulauf mit
 whisper-large-v3 als Haupt-Judge ist durch und veröffentlicht (14
 Konfigurationen, `docs/` auf GitHub Pages).

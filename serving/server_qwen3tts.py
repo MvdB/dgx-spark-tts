@@ -65,6 +65,18 @@ VOICE_DESIGN_PRESETS = {
         "Jüngere deutsche Männerstimme, lebendig und zugewandt. "
         "Muttersprachliches Hochdeutsch, natürliche Sprachmelodie mit "
         "leichter Betonung, zügiges Sprechtempo, klare Endsilben.",
+    # Schulungsstimmen: angenehm und zügig, sollen bei der Sache halten.
+    # Ausgewählt aus je drei Hörproben (2026-07-30); die Negativ-Vorgaben am
+    # Ende sind wichtig — "ohne Werbestimme, kein Pathos" verhindert den
+    # aufdringlichen Verkaufston, in den das Modell sonst kippt.
+    "de_male_coach":
+        "Angenehme deutsche Männerstimme, mittlere Tonlage, warm und motivierend. "
+        "Muttersprachliches Hochdeutsch, wacher Trainerton, zügiges Sprechtempo, "
+        "deutliche Artikulation, freundliche Energie ohne Werbestimme, kein Pathos.",
+    "de_female_coach":
+        "Freundliche deutsche Frauenstimme einer erfahrenen Trainerin, Mitte dreißig. "
+        "Muttersprachliches Hochdeutsch, ruhig-souverän und zugewandt, zügig ohne Hast, "
+        "natürliche Betonungswechsel, kein Vorlese-Singsang, keine gedehnten Vokale.",
 }
 DEFAULT_DESIGN_VOICE = os.environ.get("QWEN_TTS_VOICE_DESIGN", "de_female_news")
 
