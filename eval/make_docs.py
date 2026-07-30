@@ -279,19 +279,30 @@ def index_page(runs: list[dict]) -> None:
     if any(r["rescore"] for r in runs):
         judge2 = next(r["rescore"]["judge2"] for r in runs if r["rescore"])
         judge_note = (
-            f'<p><b>Judge-Kreuzvalidierung:</b> Kein STT-Judge ist neutral, deshalb zeigen '
-            f'die unteren beiden Zeilen beide Judges im identischen Protokoll (nur '
-            f'Wiederholung r0, beste WER über refs plus normalisierten Originaltext). '
-            f'Die Fehlerbilder sind komplementär: Der Haupt-Judge transkribiert wörtlich '
-            f'(gut für die normalization-Kategorie), verschluckt aber bei Voxtral-Audio '
-            f'systematisch Zahlwörter und zerlegt Komposita mit Bindestrichen. '
-            f'{html.escape(judge2)} hört robuster, <i>rück-normalisiert</i> aber aggressiv '
-            f'zu Ziffern — spricht ein Modell "null eins null sieben" statt "erster Juli", '
-            f'schreibt er trotzdem "01.07." und kaschiert damit genau die '
-            f'Verbalisierungsfehler, die das Testset messen soll (davon profitiert v.&nbsp;a. '
-            f'Magpie). Lesart: Die Spanne zwischen beiden Zeilen ist das ehrliche '
-            f'Unsicherheitsband; für normalization ist der Haupt-Judge aussagekräftiger, '
-            f'für reine Verständlichkeit {html.escape(judge2)}.</p>')
+            f'<p><b>Judge-Wahl und Kreuzvalidierung:</b> Haupt-Judge ist '
+            f'<b>Whisper large-v3</b>. Er hat granite-speech-4.1-2b abgelöst, nachdem '
+            f'eine Kalibrierung mit <i>bekanntem</i> Audioinhalt granite überführt hat: '
+            f'Ein TTS sprach die bereits ausgeschriebenen Referenztexte, sodass feststand, '
+            f'was im Audio zu hören ist. granite verlor dort systematisch Zahlen — aus '
+            f'„siebzehn Uhr fünfundvierzig" wurde „Der Zug fährt um uhr", aus „eine Million '
+            f'zweihundertfünfzigtausend Euro" ein abgebrochenes „beläuft sich auf eine". '
+            f'Whisper transkribiert diese Fälle korrekt (WER 0.137 gegen 0.147, Wortverlust '
+            f'0.126 gegen 0.143). Sein Schwachpunkt ist umgekehrt die Schreibweise: Ohne '
+            f'Gegenmaßnahme notiert er Zahlen als Ziffern („17.45 Uhr") und macht damit '
+            f'unmessbar, was der Testsatz prüft. Ein Initial-Prompt drängt ihn zu '
+            f'ausgeschriebenen Zahlwörtern und senkt die Ziffernquote von 83&nbsp;% auf '
+            f'33&nbsp;%; seine Beispiele stammen bewusst nicht aus dem Testsatz, sonst '
+            f'souffliert man dem Judge die erwarteten Antworten.</p>'
+            f'<p>Die unteren beiden Zeilen zeigen beide Judges im identischen Protokoll '
+            f'(nur Wiederholung r0, beste WER über refs plus normalisierten Originaltext). '
+            f'{html.escape(judge2)} dient als Gegenprobe, ist aber kein neutraler Maßstab: '
+            f'Er rück-normalisiert aggressiv zu Ziffern und wertet damit eine falsche '
+            f'Verbalisierung als Treffer. Die Spanne zwischen beiden Zeilen ist als '
+            f'Unsicherheitsband zu lesen, nicht als zwei gleichwertige Messungen. '
+            f'Beide Modelle können in Decoder-Endlosschleifen laufen — das ist kein '
+            f'Einzelfehler von granite, sondern generelles Verhalten autoregressiver '
+            f'ASR-Modelle. Solche Fälle werden erkannt, einmal mit leichtem Sampling '
+            f'wiederholt und ansonsten bei WER&nbsp;1.0 gekappt.</p>')
     body = f"""<h1>Deutscher TTS-Vergleich auf dem DGX Spark</h1>
 <p>{n["n_total"]} Testfälle (<a href="https://github.com/MvdB/dgx-spark-tts">Testset &amp; Eval-Code</a>),
 Judge: {html.escape(str(n.get("stt_model", "?")))} mit Casing-Prompt. Je Modell/Stimme wird der

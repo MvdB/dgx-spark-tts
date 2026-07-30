@@ -25,19 +25,15 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).parent))
-from roundtrip_eval import normalize, stt_model_id, wer  # noqa: E402
+from roundtrip_eval import (  # noqa: E402
+    judge_transcribe, normalize, stt_model_id, wer,
+)
 
 
 def transcribe_file(stt_url: str, model_id: str, wav_path: Path) -> str:
-    with wav_path.open("rb") as f:
-        r = requests.post(
-            f"{stt_url}/v1/audio/transcriptions",
-            files={"file": (wav_path.name, f, "audio/wav")},
-            data={"model": model_id, "language": "de"},
-            timeout=300,
-        )
-    r.raise_for_status()
-    return r.json()["text"].strip()
+    """Zweit-Judge ueber denselben Weg wie der Haupt-Judge: chat/completions
+    oder ASR-Endpunkt mit Verbatim-Prompt, je nachdem was das Modell kann."""
+    return judge_transcribe(stt_url, model_id, wav_path.read_bytes())
 
 
 def best_wer(transcript: str, refs: list[str], text: str) -> float:

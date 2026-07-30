@@ -29,10 +29,13 @@ Models are mounted read-only from `~/hf_models` (`HF_MODELS_DIR`); no downloads 
 Eval pipeline (`eval/roundtrip_eval.py`, no human in the loop):
 
 ```
-TTS adapter → WAV → granite-speech-4.1-2b on vLLM (judge) → WER/CER vs. refs
+TTS adapter → WAV → whisper-large-v3 on vLLM (judge, port 8007) → WER/CER vs. refs
 ```
 
-- The judge is the granite-speech **base** model; truecasing/punctuation come only via `chat/completions` with the casing prompt — the `/v1/audio/transcriptions` default is lowercase.
+- The judge is **whisper-large-v3** (`serving/run_whisper_judge.sh`), reached via `/v1/audio/transcriptions` with `ASR_VERBATIM_PROMPT` as the initial prompt. It replaced granite-speech-4.1-2b on 2026-07-30 after a calibration run proved granite drops number words — see below.
+- **Judge selection is measurable, not a matter of taste.** `testset/judge_calib_v1.jsonl` + `eval/judge_bench.py` calibrate a candidate on audio whose content is *known*: a TTS speaks the already-verbalized refs, so any judge error is unambiguously the judge's. Measured there (`results/judge_bench_calib/`): whisper 0.137 WER / 0.126 word loss / 33 % digit rate, granite 0.147 / 0.143 / 6 %, voxtral-mini 0.245 / 0.231 / 83 %. granite loses content ("siebzehn Uhr fünfundvierzig" → "Der Zug fährt um uhr"); whisper only writes digits, which is a format problem, not information loss. granite-speech-**plus** is unusable: vLLM 0.25.1 fails with `Failed to apply prompt replacement for mm_items['audio'][0]`.
+- The verbatim prompt's examples deliberately come from **outside** the testset. Priming the judge with expected answers would mask real TTS errors.
+- **Always reach a judge via `/v1/audio/transcriptions` first** (`judge_transcribe`). Voxtral-Mini happily answers `chat/completions` — with an English *translation* ("Das Gerät kostet 3,50 Euro" → "The device cost 3,500."), which silently turns cross-validation into nonsense (WER ~0.85). A successful response is not proof of a correct one.
 - Testset `testset/german_tts_v1.jsonl`: 43 cases with categories (normalization, compound, loanword, umlaut, longform, names); each case has one or more acceptable `refs`, scoring takes the best match.
 - Output convention: raw data is written **first** (`results_raw.jsonl`, `audio/*.wav`), summary generation is fail-safe afterwards (`summary.json`). Results dirs are named `results/YYYY-MM-DD_<config>_nN`.
 - `results/` and `*.wav` are **gitignored by design** (raw runs stay local). The published comparison lives in `docs/` (GitHub-Pages-ready): `eval/make_docs.py` scans `results/`, keeps the newest complete run per (model, voice) — the page name derives from model+voice, so a new run **overwrites** the existing page and orphaned pages are pruned. One MP3 clip per case (repeat r0 — representative, never the best repeat). Regenerate and commit `docs/` after new runs.
@@ -68,13 +71,13 @@ curl -s http://127.0.0.1:8002/v1/audio/speech -H 'Content-Type: application/json
   -d '{"input": "Guten Morgen!", "voice": "serena", "language": "de"}' -o hallo.wav
 ```
 
-Run the eval (needs a running granite-speech STT endpoint, see dgx-spark-vllm):
+Run the eval (needs the whisper judge on 8007, plus optionally the Voxtral-Mini second judge on 8006):
 
 ```bash
 python eval/roundtrip_eval.py \
   --testset testset/german_tts_v1.jsonl \
   --tts http://127.0.0.1:8002 \
-  --stt http://<judge-host>:8000 \
+  --stt http://127.0.0.1:8007 \
   --voice uncle_fu \
   --repeats 3 \
   --out results/$(date +%Y-%m-%d)_<config>_n3

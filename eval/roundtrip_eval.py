@@ -29,7 +29,8 @@ from pathlib import Path
 
 import requests
 
-STT_MODEL_HINT = "granite-speech"
+# Judge-Vorauswahl, falls ein Endpunkt mehrere Modelle anbietet.
+STT_MODEL_HINT = "whisper"
 
 
 # ── Textnormalisierung für den Vergleich ─────────────────────────────────────
@@ -108,9 +109,26 @@ def stt_model_id(stt_url: str) -> str:
 
 STT_PROMPT = "transcribe the speech with proper punctuation and capitalization."
 
+# Whisper & Co. schreiben Zahlen von Haus aus als Ziffern ("17.45 Uhr") und
+# machen damit unmessbar, was der Testsatz prueft: die Verbalisierung. Der
+# Initial-Prompt draengt zu ausgeschriebenen Zahlwoertern. Die Beispiele sind
+# bewusst NICHT aus dem Testsatz genommen — sonst souffliert man dem Judge die
+# erwarteten Antworten und verdeckt echte TTS-Fehler.
+ASR_VERBATIM_PROMPT = (
+    "Alle Zahlen, Daten, Uhrzeiten und Abkürzungen werden als Wörter "
+    "ausgeschrieben, niemals als Ziffern. Beispiele: acht neun sieben sechs, "
+    "dreiundzwanzigster März neunzehnhundertachtzig, sechs Uhr zwanzig, "
+    "zweiundvierzig Komma sieben, achtundneunzig Prozent, Absatz sieben."
+)
+
+# Welcher Endpunkt fuer welchen Judge funktioniert, wird einmal ermittelt und
+# gemerkt — Whisper kann kein chat/completions, und ein Fehlversuch je Clip
+# waere teuer.
+_JUDGE_MODE: dict[str, str] = {}
+
 
 def transcribe(stt_url: str, model_id: str, wav: bytes, timeout: int = 300,
-               temperature: float = 0.0) -> str:
+               temperature: float = 0.0, prompt: str | None = None) -> str:
     """ASR via chat/completions mit Casing-Prompt (granite-speech-4.1-2b:
     Interpunktion + Truecasing gibt es nur über diesen Prompt, der
     /v1/audio/transcriptions-Default liefert lowercase)."""
@@ -123,13 +141,53 @@ def transcribe(stt_url: str, model_id: str, wav: bytes, timeout: int = 300,
             "model": model_id, "temperature": temperature, "max_tokens": 512,
             "messages": [{"role": "user", "content": [
                 {"type": "audio_url", "audio_url": {"url": f"data:audio/wav;base64,{b64}"}},
-                {"type": "text", "text": STT_PROMPT},
+                {"type": "text", "text": prompt or STT_PROMPT},
             ]}],
         },
         timeout=timeout,
     )
     r.raise_for_status()
     return r.json()["choices"][0]["message"]["content"].strip()
+
+
+def transcribe_asr(stt_url: str, model_id: str, wav: bytes, timeout: int = 300,
+                   asr_prompt: str | None = ASR_VERBATIM_PROMPT) -> str:
+    """Klassischer ASR-Endpunkt mit Initial-Prompt (Whisper-Judge)."""
+    r = requests.post(
+        f"{stt_url}/v1/audio/transcriptions",
+        files={"file": ("clip.wav", wav, "audio/wav")},
+        data={"model": model_id, "language": "de",
+              **({"prompt": asr_prompt} if asr_prompt else {})},
+        timeout=timeout,
+    )
+    r.raise_for_status()
+    return r.json()["text"].strip()
+
+
+def judge_transcribe(stt_url: str, model_id: str, wav: bytes,
+                     temperature: float = 0.0) -> str:
+    """Transkription ueber den ASR-Endpunkt mit Verbatim-Prompt; nur wenn ein
+    Modell den nicht bedient, wird auf chat/completions ausgewichen.
+
+    Die Reihenfolge ist bewusst so herum: Voxtral-Mini *beantwortet*
+    chat/completions bereitwillig — aber als Uebersetzung ins Englische
+    ("Das Geraet kostet 3,50 Euro" -> "The device cost 3,500."). Eine
+    erfolgreiche Antwort ist eben kein Beweis fuer die richtige Antwort, und
+    der Fehler faellt erst auf, wenn die WER unerklaerlich bei 0.85 landet.
+    Der ASR-Endpunkt liefert bei allen getesteten Judges Deutsch."""
+    mode = _JUDGE_MODE.get(stt_url)
+    if mode is None:
+        try:
+            t = transcribe_asr(stt_url, model_id, wav)
+            if t.strip():
+                _JUDGE_MODE[stt_url] = "asr"
+                return t
+        except Exception:
+            pass
+        _JUDGE_MODE[stt_url] = mode = "chat"
+    if mode == "asr":
+        return transcribe_asr(stt_url, model_id, wav)
+    return transcribe(stt_url, model_id, wav, temperature=temperature)
 
 
 def looks_runaway(transcript: str, audio_seconds: float) -> bool:
@@ -146,10 +204,10 @@ def transcribe_guarded(stt_url: str, model_id: str, wav: bytes,
     deterministisch — ein Retry mit leichtem Sampling bricht sie meist.
     Liefert (transcript, runaway): runaway=True nur, wenn auch der Retry
     davonläuft; dann wird das kürzere Transkript behalten."""
-    transcript = transcribe(stt_url, model_id, wav)
+    transcript = judge_transcribe(stt_url, model_id, wav)
     if not looks_runaway(transcript, audio_seconds):
         return transcript, False
-    retry = transcribe(stt_url, model_id, wav, temperature=0.3)
+    retry = judge_transcribe(stt_url, model_id, wav, temperature=0.3)
     if not looks_runaway(retry, audio_seconds):
         return retry, False
     return min(transcript, retry, key=len), True
@@ -195,7 +253,18 @@ def main() -> int:
             tts_model = tts_payload_model
         except Exception:
             tts_model = "?"
+    # Prompt-gesteuerte Stimmen (Qwen VoiceDesign, VoxCPM2) liefern ihren
+    # instruct-Text ueber /v1/voices — ohne ihn ist der Lauf nicht
+    # reproduzierbar, also wandert er in die summary.json.
+    voice_instruct = None
+    try:
+        vv = requests.get(f"{args.tts}/v1/voices", timeout=10).json()
+        voice_instruct = (vv.get("instructs") or {}).get(args.voice)
+    except Exception:
+        pass
     print(f"TTS: {tts_model} | STT: {model_id} | {len(cases)} Fälle, Stimme: {args.voice}")
+    if voice_instruct:
+        print(f"  instruct: {voice_instruct}")
 
     results = []
     raw_path = out / "results_raw.jsonl"
@@ -265,6 +334,13 @@ def main() -> int:
         summary = {
             "testset": args.testset, "voice": args.voice,
             "tts_model": tts_model, "tts_url": args.tts, "stt_model": model_id,
+            # Prompts gehoeren zum Ergebnis: bei VoiceDesign/VoxCPM2 ist der
+            # instruct-Text die Stimme, und der Judge-Prompt bestimmt, ob
+            # ueberhaupt Interpunktion und Grossschreibung entstehen.
+            "voice_instruct": voice_instruct,
+            "stt_prompt": (STT_PROMPT if _JUDGE_MODE.get(args.stt) == "chat"
+                           else ASR_VERBATIM_PROMPT),
+            "stt_mode": _JUDGE_MODE.get(args.stt),
             "n_repeats": args.repeats,
             "n_total": len(results), "n_ok": len(ok),
             "n_error": len(results) - len(ok),

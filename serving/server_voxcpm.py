@@ -71,7 +71,10 @@ def health() -> dict:
 
 @app.get("/v1/voices")
 def voices() -> dict:
-    return {"voices": ["design", "default"], "languages": ["auto"]}
+    # 'design' setzt VOICE_INSTRUCT als Klammer-Praefix vor den Text — der
+    # Prompt gehoert zur Konfiguration und wird darum mitgeliefert.
+    return {"voices": ["design", "default"], "languages": ["auto"],
+            "instructs": {"design": VOICE_INSTRUCT}}
 
 
 @app.post("/v1/audio/speech")

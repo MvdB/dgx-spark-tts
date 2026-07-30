@@ -38,7 +38,8 @@ docker build -t spark-qwen3-tts:v1 -f Dockerfile.qwen3tts .
 MODEL_DIR=Qwen--Qwen3-TTS-12Hz-1.7B-VoiceDesign ./run_qwen3tts.sh
 # VoiceDesign voices are instruct texts, selected by name via the voice field:
 #   curl … -d '{"input":"…","voice":"de_male_news","language":"de"}'
-# Presets: de_female_news, de_male_news, de_female_calm. QWEN_TTS_VOICE_DESIGN
+# Presets: de_female_news, de_male_news, de_female_calm, de_male_young.
+# QWEN_TTS_VOICE_DESIGN
 # sets the default, QWEN_TTS_VOICE_INSTRUCT overrides it with free text.
 
 curl -s http://127.0.0.1:8002/v1/audio/speech \
@@ -62,21 +63,14 @@ Voxtral serving notes (learned the hard way, July 2026):
 - The native endpoint requires `model` in the payload and returns no timing
   headers — `roundtrip_eval.py` detects this via `/v1/models` and falls back
   to WAV-length/wall-time.
-- ⚠️ **Judge caveat, learned the painful way**: granite-speech-4.1-2b
-  systematically drops number words when transcribing *Voxtral* audio —
-  the audio itself is correct (verified by ear and by a second judge,
-  Voxtral-Mini-3B; see the retracted upstream report
-  [vllm-omni#5510](https://github.com/vllm-project/vllm-omni/issues/5510)).
-  Voxtral's granite-based WER is therefore pessimistic, especially in the
-  normalization category. `eval/rescore_with_judge.py` re-scores existing
-  runs with a second STT endpoint (protocol: repeat r0, best WER over
-  refs + normalized original text) — the docs pages show both judges.
-  But the second judge is not neutral either: Voxtral-Mini aggressively
-  inverse-normalizes to digits ("null eins null sieben" → "01.07."),
-  which **hides** exactly the verbalization errors the testset probes and
-  flatters Magpie. Read the spread between both judges as the honest
-  uncertainty band. Never verify a categorical TTS finding with a single
-  STT model.
+- ⚠️ **Judge caveat, learned the painful way**: Voxtral's numbers used to look
+  bad because the *judge* was wrong, not the audio. granite-speech-4.1-2b
+  drops number words, which cost Voxtral roughly 0.02 WER and triggered a
+  since-retracted upstream report
+  ([vllm-omni#5510](https://github.com/vllm-project/vllm-omni/issues/5510)).
+  The judge has been replaced by whisper-large-v3 (see `eval/` below); under
+  it Voxtral `de_female` moved from 0.177 into the leading group at 0.158.
+  Never verify a categorical TTS finding with a single STT model.
 
 | Endpoint | Description |
 |---|---|
@@ -117,19 +111,19 @@ prosody/naturalness (use a human MOS spot-check) and homograph stress
 `roundtrip_eval.py` — automated intelligibility eval, no human in the loop:
 
 ```
-TTS adapter → WAV → granite-speech-4.1-2b (vLLM) → WER/CER vs. refs
+TTS adapter → WAV → whisper-large-v3 (vLLM) → WER/CER vs. refs
 ```
 
-The judge is the granite-speech **base** model (not `-plus`): truecasing and
-punctuation are only produced via chat/completions with the prompt
-"transcribe the speech with proper punctuation and capitalization." — the
-`/v1/audio/transcriptions` default stays lowercase.
+The judge is **whisper-large-v3**, served by `serving/run_whisper_judge.sh`
+and queried through `/v1/audio/transcriptions` with a German initial prompt
+that pushes it toward spelled-out number words. It replaced
+granite-speech-4.1-2b in July 2026 — see the judge calibration below.
 
 ```bash
 python eval/roundtrip_eval.py \
   --testset testset/german_tts_v1.jsonl \
   --tts http://127.0.0.1:8002 \
-  --stt http://<judge-host>:8000 \
+  --stt http://127.0.0.1:8007 \
   --voice uncle_fu \
   --repeats 3 \
   --out results/$(date +%Y-%m-%d)_qwen-unclefu_n3
@@ -203,5 +197,6 @@ the upstream license texts are authoritative.
 
 - Docker with GPU support; NGC base images `nvcr.io/nvidia/nemo:26.06`
   (Magpie) and `nvcr.io/nvidia/pytorch:26.06-py3` (Qwen3-TTS), both multi-arch
-- A running granite-speech STT endpoint (see dgx-spark-vllm) for evaluation
+- A whisper-large-v3 STT endpoint for evaluation (`serving/run_whisper_judge.sh`);
+  optionally a second judge (Voxtral-Mini-3B) for cross-validation
 - Model store at `~/hf_models/` populated by dgx-spark-core's `hf-sync`

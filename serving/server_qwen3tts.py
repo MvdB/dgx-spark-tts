@@ -54,6 +54,10 @@ VOICE_DESIGN_PRESETS = {
         "Freundliche deutsche Frauenstimme, warm und ruhig. Muttersprachliches "
         "Hochdeutsch, langsames bis mittleres Sprechtempo, sehr deutliche "
         "Aussprache jeder Silbe, keine Dialektfaerbung.",
+    "de_male_young":
+        "Juengere deutsche Maennerstimme, lebendig und zugewandt. "
+        "Muttersprachliches Hochdeutsch, natuerliche Sprachmelodie mit "
+        "leichter Betonung, zuegiges Sprechtempo, klare Endsilben.",
 }
 DEFAULT_DESIGN_VOICE = os.environ.get("QWEN_TTS_VOICE_DESIGN", "de_female_news")
 
@@ -134,7 +138,13 @@ def health() -> dict:
 
 @app.get("/v1/voices")
 def voices() -> dict:
-    return {"voices": speakers, "languages": languages}
+    v = {"voices": speakers, "languages": languages}
+    if VOICE_DESIGN_MODE:
+        # Bei VoiceDesign IST der instruct-Text die Stimme — ohne ihn ist ein
+        # Ergebnis nicht reproduzierbar, also wird er mitgeliefert und vom
+        # Evaluator in die summary.json geschrieben.
+        v["instructs"] = {name: design_instruct(name) for name in speakers}
+    return v
 
 
 @app.post("/v1/audio/speech")

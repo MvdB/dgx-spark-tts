@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Komplette Eval-Suite: alle Modell/Stimme-Konfigurationen seriell,
-# je N=3 gegen den granite-Judge (Port 8000) + Rescoring mit dem
-# Zweit-Judge (Port 8006). Voraussetzungen: beide Judges laufen bereits;
+# je N=3 gegen den Whisper-Judge (Port 8007) + Rescoring mit dem
+# Zweit-Judge Voxtral-Mini (Port 8006). Voraussetzungen: beide Judges laufen bereits;
 # es wird immer nur EIN TTS-Container gleichzeitig gestartet (Unified
 # Memory). Einzelne Konfigurationen duerfen fehlschlagen (kein set -e) —
 # am Ende steht eine Zusammenfassung in $LOG.
@@ -12,17 +12,17 @@ REPO="$PWD"
 # Datum fuer einen Nachtlauf, damit die heutigen Ergebnisse nicht
 # ueberschrieben werden, solange der neue Lauf nicht durch ist).
 DATE=${SUITE_DATE:-$(date +%F)}
-STT=http://127.0.0.1:8000
-STT2=http://127.0.0.1:8006
+STT=http://127.0.0.1:8007   # Whisper large-v3 (Haupt-Judge)
+STT2=http://127.0.0.1:8006  # Voxtral-Mini-3B (Zweit-Judge)
 LOG="results/suite_${DATE}.log"
 mkdir -p results
 
 log() { echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }
 
-# Preflight: ohne granite-Judge ist die ganze Nacht verloren — sofort und
+# Preflight: ohne Haupt-Judge ist die ganze Nacht verloren — sofort und
 # laut abbrechen. Der Zweit-Judge ist nur fuers Rescoring noetig (Warnung).
 if ! curl -sf --max-time 10 "$STT/v1/models" >/dev/null; then
-  log "ABBRUCH: granite-Judge auf $STT nicht erreichbar"
+  log "ABBRUCH: Haupt-Judge (Whisper) auf $STT nicht erreichbar"
   exit 1
 fi
 curl -sf --max-time 10 "$STT2/v1/models" >/dev/null \
@@ -39,10 +39,10 @@ wait_ready() { # port
 
 run_config() { # name port voice
   local name=$1 port=$2 voice=$3 out="results/${DATE}_suite_${1}"
-  # Stirbt der granite-Judge mitten in der Nacht, ist jede weitere
+  # Stirbt der Haupt-Judge mitten in der Nacht, ist jede weitere
   # Konfiguration wertlos — dann sofort raus statt stundenlang Fehler loggen.
   if ! curl -sf --max-time 10 "$STT/v1/models" >/dev/null; then
-    log "ABBRUCH: granite-Judge auf $STT weggebrochen (vor $name)"
+    log "ABBRUCH: Haupt-Judge weggebrochen (vor $name)"
     exit 1
   fi
   if ! wait_ready "$port"; then log "FEHLER: $name — Server auf :$port nicht bereit, uebersprungen"; return 1; fi
@@ -59,7 +59,7 @@ run_config() { # name port voice
 }
 
 # Ausgangszustand: KEIN TTS-Container darf laufen (Unified Memory —
-# granite-Judge + Zweit-Judge + ein TTS passen, mehr nicht).
+# beide Judges + ein TTS passen, mehr nicht).
 log "stoppe evtl. laufende TTS-Container"
 docker stop qwen3-tts chatterbox-tts voxcpm2 voxtral-tts magpie-tts >> "$LOG" 2>&1 || true
 
@@ -81,9 +81,14 @@ run_config qwen-cv-serena  8002 serena
 run_config qwen-cv-aiden   8002 aiden
 run_config qwen-cv-unclefu 8002 uncle_fu
 
-# ── Qwen3-TTS VoiceDesign ───────────────────────────────────────────────────
+# ── Qwen3-TTS VoiceDesign: vier Stimmbeschreibungen ueber einen Server ──────
+#    (Presets werden je Request gewaehlt, der instruct-Text landet in der
+#     summary.json — ohne ihn waere ein VoiceDesign-Lauf nicht reproduzierbar.)
 MODEL_DIR=Qwen--Qwen3-TTS-12Hz-1.7B-VoiceDesign ./serving/run_qwen3tts.sh >> "$LOG" 2>&1
-run_config qwen-vd-design 8002 design
+run_config qwen-vd-de-female-news 8002 de_female_news
+run_config qwen-vd-de-male-news   8002 de_male_news
+run_config qwen-vd-de-female-calm 8002 de_female_calm
+run_config qwen-vd-de-male-young  8002 de_male_young
 docker stop qwen3-tts >> "$LOG" 2>&1
 
 # ── Chatterbox: default + de_f1 ─────────────────────────────────────────────
@@ -112,7 +117,13 @@ docker stop magpie-tts >> "$LOG" 2>&1
 log "warte auf TN-Image-Build (PID $TN_BUILD_PID)"
 if wait "$TN_BUILD_PID"; then
   IMAGE=spark-magpie-tts:v1-tn ./serving/run_server.sh >> "$LOG" 2>&1
-  run_config magpie-tn-sofia 8001 sofia
+  # Gegenprobe: ohne nemo_text_processing waere apply_TN ein stiller No-op und
+  # der Lauf eine blosse Kopie des Laufs ohne TN.
+  if wait_ready 8001 && [ "$(curl -s http://127.0.0.1:8001/health | python3 -c 'import json,sys; print(json.load(sys.stdin).get("tn"))')" = "True" ]; then
+    run_config magpie-tn-sofia 8001 sofia
+  else
+    log "FEHLER: magpie-tn — /health meldet kein TN, Lauf waere wertlos"
+  fi
   docker stop magpie-tts >> "$LOG" 2>&1
 else
   log "FEHLER: TN-Image-Build fehlgeschlagen (s. results/tn_build_${DATE}.log) — magpie-tn uebersprungen"
