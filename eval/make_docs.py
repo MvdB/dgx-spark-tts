@@ -19,7 +19,8 @@ WER-Angabe pro Fall ist der Mittelwert über alle Repeats.
 Unvollständige Läufe (Smoke, --limit, --category) werden übersprungen
 (weniger als MIN_CASES Fälle).
 
-Abhängigkeit: soundfile (pip install soundfile; braucht libsndfile >= 1.2 für MP3).
+Abhängigkeit: soundfile (pip install --break-system-packages soundfile — das
+System-Python ist PEP-668-verwaltet; braucht libsndfile >= 1.2 für MP3).
 
 Aufruf:  python eval/make_docs.py            # aus dem Repo-Root
 """

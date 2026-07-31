@@ -179,7 +179,7 @@ WAV runs stay local in `results/` (gitignored).
 Regenerate after new runs:
 
 ```bash
-pip install soundfile   # needs libsndfile >= 1.2 for MP3
+pip install --break-system-packages soundfile   # needs libsndfile >= 1.2 for MP3
 python eval/make_docs.py
 ```
 

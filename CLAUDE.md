@@ -86,7 +86,8 @@ python eval/roundtrip_eval.py \
 # Listening page for human spot-check:
 python eval/make_listen_page.py results/<run-dir>    # → listen.html
 
-# Regenerate the published docs/ pages (needs: pip install soundfile):
+# Regenerate the published docs/ pages
+# (needs: pip install --break-system-packages soundfile — PEP-668-Umgebung):
 python eval/make_docs.py
 ```
 
