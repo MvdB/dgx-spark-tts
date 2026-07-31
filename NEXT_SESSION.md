@@ -14,24 +14,31 @@ keine Verständlichkeit gegenüber den Nachrichtenstimmen. Der Zweit-Judge ist
 durchweg milder, ordnet aber gleich; der Abstand der beiden Stimmen
 untereinander (0.007) liegt ohnehin unter der Rauschgrenze von ~0.02.
 
-**Michael hat die Hörproben nicht mehr bewerten können.** Je drei männliche und
-weibliche Varianten wurden erzeugt; gewählt habe ich unter Zeitdruck B (männlich)
-und F (weiblich) — die zügigsten mit passendem Charakter. Falls ihm eine andere
-besser gefällt: Beschreibung in `VOICE_DESIGN_PRESETS`
-(`serving/server_qwen3tts.py`) tauschen, Image neu bauen, Eval nachziehen. Die
-Hörproben lagen im Scratchpad und sind weg — mit den Beschreibungen unten neu
-erzeugbar.
+**EINZIGER OFFENER PUNKT: Michael hat die Hörproben noch nicht bewertet.**
+Gesetzt sind B (männlich) und F (weiblich) — eine Auswahl, die ich am
+2026-07-30 unter Zeitdruck getroffen habe, ohne dass sie jemand gehört hätte.
+Die zehn Proben wurden am 2026-07-31 neu erzeugt und ihm als HTML-Seite
+geschickt; erzeugbar mit den Beschreibungen unten über `voice: "design"` plus
+freiem `instruct` im Request (kein Neustart des Servers nötig). Falls ihm eine
+andere gefällt: Beschreibung in `VOICE_DESIGN_PRESETS`
+(`serving/server_qwen3tts.py`) tauschen, Image neu bauen, Eval nachziehen.
 
-Sprechtempo der Kandidaten (s/Zeichen; die bisherigen Presets liegen bei 0.099):
+Sprechtempo der Kandidaten (s/Zeichen, Schulungstext):
 
-| Variante | Charakter | Tempo |
-|---|---|---|
-| A | männlich, wacher Erklärton | 0.0596 |
-| **B** | **männlich, warm-motivierend (gewählt)** | **0.0581** |
-| C | männlich, souverän-zugewandt | 0.0667 |
-| D | weiblich, wacher Erklärton | 0.0649 |
-| E | weiblich, warm-motivierend | 0.0735 |
-| **F** | **weiblich, souverän-zugewandt (gewählt)** | **0.0615** |
+| Variante | Charakter | 2026-07-30 | 2026-07-31 |
+|---|---|---|---|
+| A | männlich, wacher Erklärton | 0.0596 | 0.0590 |
+| **B** | **männlich, warm-motivierend (gesetzt)** | **0.0581** | **0.0605** |
+| C | männlich, souverän-zugewandt | 0.0667 | 0.0744 |
+| D | weiblich, wacher Erklärton | 0.0649 | 0.0575 |
+| E | weiblich, warm-motivierend | 0.0735 | 0.0596 |
+| **F** | **weiblich, souverän-zugewandt (gesetzt)** | **0.0615** | **0.0599** |
+
+Die zwei Spalten sind derselbe Prompt an zwei Tagen. Die Unterschiede zwischen
+den Varianten sind kleiner als die Streuung derselben Variante zwischen den
+Läufen (E schwankt um 0.014) — **nach Tempo lässt sich hier nicht auswählen**,
+nur nach Gehör. Meine gestrige Begründung „die zügigsten" war entsprechend
+haltlos.
 
 Beschreibungstexte aller sechs Varianten:
 
@@ -51,21 +58,22 @@ fest, was Sie bereits geschafft haben: Sie kennen jetzt die drei Grundprinzipien
 und können sie an einem eigenen Beispiel anwenden. Das ist genau der Punkt, an
 dem es erfahrungsgemäß Spaß zu machen beginnt."
 
-Stand: 2026-07-30, Ende der Session. Der komplette Suite-Neulauf mit
-whisper-large-v3 als Haupt-Judge ist durch und veröffentlicht (14
-Konfigurationen, `docs/` auf GitHub Pages).
+Stand: 2026-07-31. Der komplette Suite-Neulauf mit whisper-large-v3 als
+Haupt-Judge ist durch und veröffentlicht: 16 Konfigurationen, alle mit
+Zweit-Judge-Gegenprobe und Tempo-Kennzahl, `docs/` auf GitHub Pages.
 
 ## Direkt anschlussfähig
 
 1. **Stimmbeschreibungen der übrigen drei VoiceDesign-Presets überarbeiten.**
    `de_male_news` wurde nach Hörvergleich auf die Bruststimmen-Variante
-   umgestellt, weil die Vorgängerfassung „jammerig" klang (gedehnt: 13.4 s
-   statt 8.6 s für denselben Satz). Ursache war doppelt: ASCII-Umschreibungen
-   im Prompt („Maennerstimme") plus die Kombination „ruhig + sonor + mäßiges
-   Sprechtempo". Die anderen drei Presets sind auf echte Umlaute korrigiert,
-   aber inhaltlich noch nie abgehört worden — insbesondere `de_female_calm`
-   enthält mit „langsames bis mittleres Sprechtempo" dasselbe Risiko.
-   Vorgehen wie gehabt: Hörproben erzeugen, auswählen, dann Eval nachziehen.
+   umgestellt, weil die Vorgängerfassung „jammerig" klang. Als Ursache hatte
+   ich ASCII-Umschreibungen im Prompt („Maennerstimme") plus die Kombination
+   „ruhig + sonor + mäßiges Sprechtempo" notiert — die Tempo-Hälfte davon ist
+   am 2026-07-31 widerlegt worden (siehe Punkt 2), es ging um Klangfarbe und
+   Satzmelodie. Die anderen drei Presets sind auf echte Umlaute korrigiert,
+   aber nie abgehört worden; `de_female_calm` ist mit 0.0887 s/Zeichen das
+   langsamste Preset überhaupt und enthält „langsames bis mittleres
+   Sprechtempo". Hörproben dafür sind in der Sendung vom 2026-07-31 enthalten.
 
 2. **Prosodie bleibt blind gemessen** — die Tempo-Kennzahl ist eingebaut, aber
    sie löst das Problem nicht. `sec_per_char_median/mean/max` steht seit dem
