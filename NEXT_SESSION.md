@@ -86,15 +86,28 @@ Konfigurationen, `docs/` auf GitHub Pages).
    das Ohr. Wer Prosodie messen will, braucht etwas anderes (MOS-Predictor
    wie UTMOS/NISQA), nicht eine Dauer-Kennzahl.
 
-3. **Dritter Judge fehlt weiterhin.** Mit zwei Judges lässt sich bei
-   Uneinigkeit nur eine Spanne angeben, nicht entscheiden, wer recht hat.
-   whisper-large-v3 (Haupt) und Voxtral-Mini-3B (Zweit) sind gesetzt;
-   granite-speech ist wegen Zahlwort-Verlusten ausgeschieden,
-   granite-speech-plus ist in vLLM 0.25.1 defekt
-   (`Failed to apply prompt replacement for mm_items['audio'][0]`).
-   Kandidaten: `Voxtral-Mini-4B-Realtime` (lokal vorhanden, ungetestet) oder
-   ein Whisper-Derivat anderer Herkunft. Prüfen mit `eval/judge_bench.py`
-   gegen `testset/judge_calib_v1.jsonl` — das Verfahren steht.
+3. **Dritter Judge fehlt weiterhin** — der Kandidat ist durchgefallen.
+   `Voxtral-Mini-4B-Realtime-2602` wurde am 2026-07-31 kalibriert und ist
+   **unbrauchbar**: Ziffernquote 0.833 (Whisper 0.278), WER 0.231 (Whisper
+   0.154). Es verliert keinen Inhalt, schreibt aber gesprochene Zahlwörter
+   massiv in Ziffern zurück — „neun bis zehn Uhr dreißig" → „9 bis 10.30 Uhr",
+   „Paragraf zwölf" → „§ 12". Der Verbatim-Prompt greift bei der
+   Voxtral-Familie nicht. Startskript und Messung:
+   `serving/run_voxtral_realtime_judge.sh` (enthält die zwei nötigen
+   `--hf-overrides`-Kniffe, falls das Modell für etwas anderes gebraucht wird).
+
+   Damit bleibt es bei zwei Judges. Offene Kandidaten: ein Whisper-Derivat
+   anderer Herkunft, oder `granite-speech-4.1-2b-plus`, sobald vLLM den
+   Bug `Failed to apply prompt replacement for mm_items['audio'][0]` los ist.
+
+   **Neu und wichtig fürs Verfahren:** Das Kalibrier-Audio war beim Verwerfen
+   der Ergebnisse am 2026-07-30 mit gelöscht worden — übrig blieben die Zahlen
+   ohne ihre Messgrundlage. Es wird jetzt mit `eval/make_judge_calib.sh`
+   erzeugt. Dabei zeigte sich: die absoluten Werte hängen am Audio (Whisper
+   0.137 auf dem alten, 0.154 auf dem neuen Satz — gleiches Modell, gleicher
+   Prompt). Judge-Zahlen sind **nur innerhalb eines Audiosatzes vergleichbar**;
+   wer einen Kandidaten misst, muss die Amtsinhaber auf demselben Audio
+   mitmessen.
 
 ## Beobachtete Instabilitäten (nicht behoben, nur eingefangen)
 
