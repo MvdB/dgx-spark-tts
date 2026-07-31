@@ -1,28 +1,38 @@
 # Offene Punkte für die nächste Session
 
-## ZUERST: Schulungsstimmen abschließen (Lauf war beim Sessionende noch aktiv)
+## ZUERST: fehlende Gegenprobe für de_female_coach
 
-Zwei neue VoiceDesign-Presets für Schulungstexte sind angelegt und committet,
-ihre Evaluation lief beim Sessionende noch (abgekoppelter Prozess, Log:
-`results/coach_eval.log`, Marker `COACH_KETTE_FERTIG`):
+Die beiden Schulungsstimmen sind **fertig evaluiert und veröffentlicht**
+(Commits 9b0b06b und e0c0a34):
 
-- `de_male_coach` — "Angenehme deutsche Männerstimme, mittlere Tonlage, warm und
-  motivierend … freundliche Energie ohne Werbestimme, kein Pathos."
-- `de_female_coach` — "Freundliche deutsche Frauenstimme einer erfahrenen
-  Trainerin, Mitte dreißig … kein Vorlese-Singsang, keine gedehnten Vokale."
+| Stimme | WER | CER |
+|---|---|---|
+| de_female_coach | 0.164 | 0.124 |
+| de_male_coach | 0.171 | 0.145 |
 
-**Zu tun:** `results/coach_eval.log` prüfen, bei Erfolg `eval/make_docs.py`
-laufen lassen (die Kette macht das selbst, aber nur wenn sie durchkam) und
-`docs/` committen. Beide Stimmen stehen bereits in `eval/run_suite.sh`, sind
-also ab dem nächsten Suite-Lauf automatisch dabei.
+Beide liegen im vorderen Feld — die angenehmere, zügigere Sprechweise kostet
+keine Verständlichkeit gegenüber den Nachrichtenstimmen.
 
-**Michael hat die Hörproben noch nicht bewertet.** Je drei männliche und
-weibliche Varianten wurden erzeugt (Text und Beschreibungen unten). Gewählt
-habe ich unter Zeitdruck B (männlich) und F (weiblich) — die zügigsten mit
-passendem Charakter. Falls er eine andere bevorzugt: Beschreibung in
-`VOICE_DESIGN_PRESETS` (serving/server_qwen3tts.py) tauschen, Image neu bauen,
-Eval nachziehen. Die Hörproben lagen im Scratchpad und sind nach Sessionende
-weg — bei Bedarf mit den Beschreibungen unten neu erzeugen.
+**Einziger offener Punkt:** Für `de_female_coach` fehlt die Kreuzvalidierung
+mit dem Zweit-Judge (der Witness-Container war nicht rechtzeitig oben, dann lief
+die Zeit ab). `de_male_coach` hat seine `rescore_judge2.json`. Nachzuziehen mit:
+
+```bash
+docker start stt-witness        # warten bis /v1/models antwortet
+python eval/rescore_with_judge.py --stt2 http://127.0.0.1:8006 \
+  results/2026-07-30_suite_qwen-vd-de-female-coach
+python eval/make_docs.py        # danach docs/ committen
+```
+
+Das ist eine Gegenprobe, kein Messwert — die publizierten Zahlen stehen.
+
+**Michael hat die Hörproben nicht mehr bewerten können.** Je drei männliche und
+weibliche Varianten wurden erzeugt; gewählt habe ich unter Zeitdruck B (männlich)
+und F (weiblich) — die zügigsten mit passendem Charakter. Falls ihm eine andere
+besser gefällt: Beschreibung in `VOICE_DESIGN_PRESETS`
+(`serving/server_qwen3tts.py`) tauschen, Image neu bauen, Eval nachziehen. Die
+Hörproben lagen im Scratchpad und sind weg — mit den Beschreibungen unten neu
+erzeugbar.
 
 Sprechtempo der Kandidaten (s/Zeichen; die bisherigen Presets liegen bei 0.099):
 
