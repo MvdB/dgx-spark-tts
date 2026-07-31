@@ -67,12 +67,24 @@ Konfigurationen, `docs/` auf GitHub Pages).
    enthält mit „langsames bis mittleres Sprechtempo" dasselbe Risiko.
    Vorgehen wie gehabt: Hörproben erzeugen, auswählen, dann Eval nachziehen.
 
-2. **Prosodie ist blind gemessen.** Der Testsatz misst Verständlichkeit, nicht
-   Natürlichkeit — genau deshalb fiel das jammerige Timbre erst beim Anhören
-   auf, obwohl die Konfiguration mit WER 0.156 in der Spitzengruppe lag. Eine
-   billige Ergänzung wäre eine Kennzahl „Sekunden Audio pro Zeichen Text" je
-   Konfiguration: Sie hätte den Ausreißer sofort sichtbar gemacht und kostet
-   nichts, weil `audio_duration` bereits in den Rohdaten steht.
+2. **Prosodie bleibt blind gemessen** — die Tempo-Kennzahl ist eingebaut, aber
+   sie löst das Problem nicht. `sec_per_char_median/mean/max` steht seit dem
+   2026-07-31 in jeder `summary.json` und in `docs/`. Nachgemessen leistet sie:
+
+   - **trennt Modelle** deutlich (Voxtral 0.059, Qwen VoiceDesign 0.092),
+   - **zeigt grobe Entgleisungen** über `sec_per_char_max` (de_male_news 1.21
+     s/Zeichen = der norm-012-Ausreißer),
+   - **trennt aber keine Prompt-Unterschiede innerhalb eines Modells.**
+
+   Die Hoffnung aus der letzten Session, sie hätte das jammerige Timbre
+   gefunden, hat sich nicht bestätigt: alte und neue `de_male_news`-Fassung
+   liegen bei 0.127 vs. 0.124 (12 Testsätze) bzw. 0.103 vs. 0.100 (longform),
+   während schon die Wiederholungen desselben Laufs im Median um 0.005–0.008
+   streuen. Die ursprüngliche Begründung „13.4 s statt 8.6 s für denselben
+   Satz" war eine Einzelmessung und damit Rauschen. Das Problem war
+   Klangfarbe und Satzmelodie, nicht Tempo — und dafür gibt es weiterhin nur
+   das Ohr. Wer Prosodie messen will, braucht etwas anderes (MOS-Predictor
+   wie UTMOS/NISQA), nicht eine Dauer-Kennzahl.
 
 3. **Dritter Judge fehlt weiterhin.** Mit zwei Judges lässt sich bei
    Uneinigkeit nur eine Spanne angeben, nicht entscheiden, wer recht hat.

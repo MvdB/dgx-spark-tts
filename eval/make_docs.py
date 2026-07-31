@@ -194,7 +194,9 @@ def model_page(run: dict) -> None:
              f'WER {fmt(s.get("wer_capped_mean", s.get("wer_mean")))} (Cap 1.0) · '
              f'CER {fmt(s.get("cer_capped_mean", s.get("cer_mean")))} · '
              f'RTF {fmt(s.get("rtf_mean"), 2)} · '
-             f'Lizenz: {html.escape(run["license"])} · '
+             + (f'Tempo {fmt(s.get("sec_per_char_median"), 4)} s/Zeichen · '
+                if s.get("sec_per_char_median") else '')
+             + f'Lizenz: {html.escape(run["license"])} · '
              f'Lauf: {html.escape(run["res_dir"].name)}</p>',
              '<p class="meta">Je Fall ein Clip (erste von '
              f'{s.get("n_repeats", 1)} Wiederholung(en)); WER ist der Mittelwert über '
@@ -277,6 +279,14 @@ def index_page(runs: list[dict]) -> None:
         tds = "".join(f'<td class="{"best" if v is not None and v == best else ""}">'
                       f"{fmt(v)}</td>" for v in vals)
         body_rows.append(f"<tr><td>{html.escape(label)}</td>{tds}</tr>")
+
+    # Sprechtempo bewusst ohne Bestmarkierung: schneller ist nicht besser.
+    # Die Zeile dient dem Erkennen von Ausreissern nach oben (gedehnt) wie
+    # nach unten (gehetzt) und ist die einzige Prosodie-Spur in der Tabelle.
+    if any(r["summary"].get("sec_per_char_median") for r in runs):
+        tds = "".join(f'<td>{fmt(r["summary"].get("sec_per_char_median"), 4)}</td>'
+                      for r in runs)
+        body_rows.append(f"<tr><td>Tempo (s/Zeichen, Median)</td>{tds}</tr>")
 
     # Zweit-Judge-Zeilen (Kreuzvalidierung; Protokoll: r0, beste WER über
     # refs + Originaltext — siehe Methodik-Absatz)

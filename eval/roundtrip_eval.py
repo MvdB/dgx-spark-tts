@@ -208,6 +208,39 @@ def judge_transcribe(stt_url: str, model_id: str, wav: bytes,
     return transcribe(stt_url, model_id, wav, temperature=temperature)
 
 
+def sec_per_char_stats(rows: list[dict]) -> dict:
+    """Sprechtempo je Konfiguration in Sekunden Audio pro Zeichen Text.
+
+    Billig zu haben (audio_duration steht ohnehin in den Rohdaten). Was die
+    Kennzahl leistet, ist am 2026-07-31 nachgemessen worden:
+
+    - Zwischen Modellen trennt sie deutlich (Voxtral 0.059, Qwen VoiceDesign
+      0.092 — Faktor 1.6).
+    - Grobe Entgleisungen zeigt sie ueber sec_per_char_max (de_male_news kam
+      auf 1.21 s/Zeichen, das ist der bekannte norm-012-Ausreisser).
+    - Prompt-Unterschiede *innerhalb* eines Modells trennt sie NICHT: die
+      Wiederholungen desselben Laufs streuen im Median um 0.005-0.008, die
+      alte "jammerige" und die neue de_male_news-Beschreibung unterscheiden
+      sich nur um 0.0035. Ein gedehntes Timbre ist damit weiterhin nur per
+      Ohr zu finden.
+
+    Der Median ist robust gegen einzelne Ausreisser, das Maximum zeigt sie."""
+    vals = sorted(
+        rep["audio_duration"] / len(r["text"])
+        for r in rows for rep in (r.get("repeats") or [r])
+        if rep.get("audio_duration") and r.get("text")
+    )
+    if not vals:
+        return {}
+    n = len(vals)
+    median = vals[n // 2] if n % 2 else (vals[n // 2 - 1] + vals[n // 2]) / 2
+    return {
+        "sec_per_char_median": round(median, 4),
+        "sec_per_char_mean": round(sum(vals) / n, 4),
+        "sec_per_char_max": round(vals[-1], 4),
+    }
+
+
 def looks_runaway(transcript: str, audio_seconds: float) -> bool:
     """ASR-Decoder-Schleife: mehr Transkript, als in die Audiodauer an Sprache
     passt (Deutsch ~15 Zeichen/s inkl. Leerzeichen; Faktor 2 Toleranz).
@@ -380,6 +413,13 @@ def main() -> int:
             },
             "n_asr_runaway": sum(
                 1 for r in ok for rep in r["repeats"] if rep.get("asr_runaway")),
+            # Sprechtempo: der Testsatz misst Verstaendlichkeit, nicht
+            # Natuerlichkeit — eine gedehnte, klagende Stimme kann in der WER
+            # in der Spitzengruppe liegen (de_male_news lag bei 0.156, klang
+            # aber unbrauchbar). Der Median ist das typische Tempo, das Maximum
+            # zeigt einzelne Entgleisungen. Zum Vergleich: die Qwen-Presets
+            # liegen bei 0.060-0.081 s/Zeichen.
+            **sec_per_char_stats(ok),
             "rtf_mean": round(
                 sum(r["synthesis_time"] / max(r["audio_duration"], 1e-6) for r in ok)
                 / max(len(ok), 1), 3),

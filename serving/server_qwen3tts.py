@@ -49,9 +49,15 @@ VOICE_DESIGN_PRESETS = {
         "Muttersprachliches Hochdeutsch, neutrale Nachrichtensprecher-Intonation, "
         "präzise Artikulation.",
     # Nach Hörvergleich gewählt (2026-07-30): die Vorgängerfassung ("ruhig,
-    # sonor, mäßiges Sprechtempo") klang gedehnt und klagend und brauchte für
-    # denselben Satz 13.4 s statt 8.6 s. Die expliziten Negativ-Vorgaben am
-    # Ende wirken — ohne sie kippt die Satzmelodie ins Fragende.
+    # sonor, mäßiges Sprechtempo") klang klagend. Die expliziten Negativ-
+    # Vorgaben am Ende wirken — ohne sie kippt die Satzmelodie ins Fragende.
+    # Korrektur (2026-07-31): die ursprünglich hier notierte Begründung
+    # "gedehnt, 13.4 s statt 8.6 s für denselben Satz" war eine Einzelmessung
+    # und damit Sampling-Rauschen. Über 12 bzw. 4 Testsätze gemessen liegen
+    # alte und neue Fassung bei 0.127 vs. 0.124 bzw. 0.103 vs. 0.100
+    # s/Zeichen — unterhalb der Streuung zwischen Wiederholungen desselben
+    # Laufs (0.005-0.008). Der Unterschied ist Klangfarbe und Satzmelodie,
+    # nicht Tempo.
     "de_male_news":
         "Kräftige deutsche Männerstimme mit tiefer, ruhiger Bruststimme. "
         "Muttersprachliches Hochdeutsch, selbstbewusster und freundlicher Ton, "
