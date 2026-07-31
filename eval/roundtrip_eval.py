@@ -126,6 +126,9 @@ ASR_VERBATIM_PROMPT = (
 # waere teuer.
 _JUDGE_MODE: dict[str, str] = {}
 
+# Obergrenze fuer die Judge-Generierung (s. transcribe_asr).
+MAX_ASR_TOKENS = 512
+
 
 def transcribe(stt_url: str, model_id: str, wav: bytes, timeout: int = 300,
                temperature: float = 0.0, prompt: str | None = None) -> str:
@@ -151,12 +154,23 @@ def transcribe(stt_url: str, model_id: str, wav: bytes, timeout: int = 300,
 
 
 def transcribe_asr(stt_url: str, model_id: str, wav: bytes, timeout: int = 300,
+                   temperature: float = 0.0,
                    asr_prompt: str | None = ASR_VERBATIM_PROMPT) -> str:
-    """Klassischer ASR-Endpunkt mit Initial-Prompt (Whisper-Judge)."""
+    """Klassischer ASR-Endpunkt mit Initial-Prompt (Whisper-Judge).
+
+    MAX_ASR_TOKENS ist eine Notbremse, keine Messgroesse: der laengste Text im
+    Testsatz hat 188 Zeichen, das Limit erlaubt gut das Zehnfache. Ohne die
+    Grenze generiert ein LLM-basierter Judge in der Decoder-Schleife bis
+    max_model_len weiter — Voxtral-Mini hat am 2026-07-31 fuenf Minuten lang
+    mit 23 tok/s gebabbelt, bis der Client-Timeout zuschlug und das ganze
+    Rescoring mitriss. Whisper begrenzt sich mit 448 Tokens je Segment selbst,
+    fuer den bleibt das Limit wirkungslos."""
     r = requests.post(
         f"{stt_url}/v1/audio/transcriptions",
         files={"file": ("clip.wav", wav, "audio/wav")},
         data={"model": model_id, "language": "de",
+              "temperature": temperature,
+              "max_completion_tokens": MAX_ASR_TOKENS,
               **({"prompt": asr_prompt} if asr_prompt else {})},
         timeout=timeout,
     )
@@ -186,7 +200,11 @@ def judge_transcribe(stt_url: str, model_id: str, wav: bytes,
             pass
         _JUDGE_MODE[stt_url] = mode = "chat"
     if mode == "asr":
-        return transcribe_asr(stt_url, model_id, wav)
+        # temperature muss durchgereicht werden: sonst wiederholt der Retry in
+        # transcribe_guarded exakt dieselbe deterministische Anfrage und bekommt
+        # dieselbe Schleife zurueck. Bis 2026-07-31 war der Runaway-Retry fuer
+        # den Whisper-Judge damit ein stiller No-op.
+        return transcribe_asr(stt_url, model_id, wav, temperature=temperature)
     return transcribe(stt_url, model_id, wav, temperature=temperature)
 
 

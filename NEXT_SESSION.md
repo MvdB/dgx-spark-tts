@@ -1,30 +1,18 @@
 # Offene Punkte für die nächste Session
 
-## ZUERST: fehlende Gegenprobe für de_female_coach
+## Stand der Schulungsstimmen: fertig
 
-Die beiden Schulungsstimmen sind **fertig evaluiert und veröffentlicht**
-(Commits 9b0b06b und e0c0a34):
+Die beiden Schulungsstimmen sind evaluiert, kreuzvalidiert und veröffentlicht:
 
-| Stimme | WER | CER |
-|---|---|---|
-| de_female_coach | 0.164 | 0.124 |
-| de_male_coach | 0.171 | 0.145 |
+| Stimme | WER (n=3) | CER | Zweit-Judge (r0) |
+|---|---|---|---|
+| de_female_coach | 0.164 | 0.124 | 0.093 (Whisper im selben Protokoll: 0.142) |
+| de_male_coach | 0.171 | 0.145 | 0.064 (Whisper: 0.123) |
 
 Beide liegen im vorderen Feld — die angenehmere, zügigere Sprechweise kostet
-keine Verständlichkeit gegenüber den Nachrichtenstimmen.
-
-**Einziger offener Punkt:** Für `de_female_coach` fehlt die Kreuzvalidierung
-mit dem Zweit-Judge (der Witness-Container war nicht rechtzeitig oben, dann lief
-die Zeit ab). `de_male_coach` hat seine `rescore_judge2.json`. Nachzuziehen mit:
-
-```bash
-docker start stt-witness        # warten bis /v1/models antwortet
-python eval/rescore_with_judge.py --stt2 http://127.0.0.1:8006 \
-  results/2026-07-30_suite_qwen-vd-de-female-coach
-python eval/make_docs.py        # danach docs/ committen
-```
-
-Das ist eine Gegenprobe, kein Messwert — die publizierten Zahlen stehen.
+keine Verständlichkeit gegenüber den Nachrichtenstimmen. Der Zweit-Judge ist
+durchweg milder, ordnet aber gleich; der Abstand der beiden Stimmen
+untereinander (0.007) liegt ohnehin unter der Rauschgrenze von ~0.02.
 
 **Michael hat die Hörproben nicht mehr bewerten können.** Je drei männliche und
 weibliche Varianten wurden erzeugt; gewählt habe ich unter Zeitdruck B (männlich)
@@ -111,6 +99,14 @@ Konfigurationen, `docs/` auf GitHub Pages).
    zwei, zwei…" für 2.9 s Audio). Das ist generelles Verhalten autoregressiver
    ASR-Modelle, kein granite-Spezifikum. Der Retry mit `temperature 0.3` bricht
    die meisten, nicht alle.
+
+7. **Der Runaway-Retry war für Whisper bis 2026-07-31 wirkungslos** (behoben).
+   `judge_transcribe` reichte die `temperature` nur auf dem chat-Pfad weiter,
+   auf dem ASR-Pfad fiel sie unter den Tisch — der Retry stellte also exakt
+   dieselbe deterministische Anfrage und bekam dieselbe Schleife zurück. Die
+   publizierten Zahlen ändert das nicht (Runaways werden ohnehin bei WER 1.0
+   gekappt), aber die Rettungsquote war schlicht null. Jetzt greift der Retry
+   wirklich; ob er die Runaway-Zahlen senkt, ist beim nächsten Lauf zu prüfen.
 
 ## Betriebszustand beim Sessionende
 

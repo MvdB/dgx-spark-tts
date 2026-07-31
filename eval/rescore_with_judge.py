@@ -20,20 +20,30 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import wave
 from pathlib import Path
-
-import requests
 
 sys.path.insert(0, str(Path(__file__).parent))
 from roundtrip_eval import (  # noqa: E402
-    judge_transcribe, normalize, stt_model_id, wer,
+    normalize, stt_model_id, transcribe_guarded, wer,
 )
 
 
-def transcribe_file(stt_url: str, model_id: str, wav_path: Path) -> str:
-    """Zweit-Judge ueber denselben Weg wie der Haupt-Judge: chat/completions
-    oder ASR-Endpunkt mit Verbatim-Prompt, je nachdem was das Modell kann."""
-    return judge_transcribe(stt_url, model_id, wav_path.read_bytes())
+def wav_seconds(wav_path: Path) -> float:
+    try:
+        with wave.open(str(wav_path), "rb") as w:
+            return w.getnframes() / float(w.getframerate())
+    except Exception:
+        return 0.0
+
+
+def transcribe_file(stt_url: str, model_id: str, wav_path: Path) -> tuple[str, bool]:
+    """Zweit-Judge ueber denselben Weg wie der Haupt-Judge — inklusive
+    Runaway-Schutz. Der fehlte hier bis 2026-07-31: eine Decoder-Schleife im
+    Zweit-Judge lief ungebremst in den Client-Timeout und riss das komplette
+    Rescoring mit, statt nur den einen Clip zu verlieren."""
+    return transcribe_guarded(stt_url, model_id, wav_path.read_bytes(),
+                              wav_seconds(wav_path))
 
 
 def best_wer(transcript: str, refs: list[str], text: str) -> float:
@@ -70,11 +80,20 @@ def main() -> int:
             testset[c["id"]] = c
 
         recs, w1s, w2s = [], [], []
+        n_runaway, n_failed = 0, 0
         for r, wav in out_rows:
             c = testset[r["id"]]
-            # granite-r0-Transkript liegt schon vor (altes Schema: top-level)
+            # r0-Transkript des Haupt-Judges liegt schon vor (altes Schema:
+            # top-level statt in repeats)
             t1 = (r.get("repeats") or [r])[0].get("transcript", "")
-            t2 = transcribe_file(args.stt2, model2, wav)
+            try:
+                t2, runaway = transcribe_file(args.stt2, model2, wav)
+            except Exception as e:
+                # Ein kaputter Clip darf die Gegenprobe nicht komplett kosten.
+                print(f"  WARNUNG: {r['id']} — Zweit-Judge fehlgeschlagen ({e})")
+                n_failed += 1
+                continue
+            n_runaway += bool(runaway)
             # gekappt bei 1.0 wie im Haupt-Eval: ein ASR-Runaway (WER >> 1)
             # darf den Mittelwert nicht dominieren
             w1 = min(best_wer(t1, c["refs"], c["text"]), 1.0)
@@ -84,12 +103,19 @@ def main() -> int:
             cat.setdefault(c["category"], []).append((w1, w2))
             recs.append({"id": r["id"], "category": c["category"], "text": c["text"],
                          "judge1_transcript": t1, "judge2_transcript": t2,
-                         "wer_judge1": round(w1, 4), "wer_judge2": round(w2, 4)})
+                         "wer_judge1": round(w1, 4), "wer_judge2": round(w2, 4),
+                         **({"judge2_runaway": True} if runaway else {})})
+        if not w1s:
+            print(f"{res_dir.name}: kein einziger Clip transkribiert — nichts geschrieben")
+            continue
         out = {
             "run": res_dir.name,
             "judge1": summary.get("stt_model"),
             "judge2": model2,
             "protocol": "best WER over refs + normalized original text, repeat r0 only, capped at 1.0",
+            "n_cases": len(w1s),
+            "n_judge2_runaway": n_runaway,
+            "n_judge2_failed": n_failed,
             "wer_judge1_mean": round(sum(w1s) / len(w1s), 4),
             "wer_judge2_mean": round(sum(w2s) / len(w2s), 4),
             "wer_by_category": {
@@ -100,8 +126,9 @@ def main() -> int:
         }
         (res_dir / "rescore_judge2.json").write_text(
             json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
-        print(f"{res_dir.name}: granite {out['wer_judge1_mean']} | "
-              f"{model2} {out['wer_judge2_mean']}")
+        print(f"{res_dir.name}: {out['judge1']} {out['wer_judge1_mean']} | "
+              f"{model2} {out['wer_judge2_mean']} "
+              f"({len(w1s)} Faelle, {n_runaway} Runaways, {n_failed} Ausfaelle)")
     return 0
 
 
