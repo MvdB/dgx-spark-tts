@@ -1,9 +1,9 @@
-# dgx-spark-tts
+# southbyte-tts
 
 TTS serving and German-language evaluation on the **NVIDIA DGX Spark**
 (GB10, aarch64). Part of the DGX Spark repo family — shared infrastructure
-lives in [dgx-spark-core](https://github.com/MvdB/dgx-spark-core), the
-LLM stack in [dgx-spark-vllm](https://github.com/MvdB/dgx-spark-vllm).
+lives in [southbyte-core](https://github.com/MvdB/southbyte-core), the
+LLM stack in [southbyte-vllm](https://github.com/MvdB/southbyte-vllm).
 
 Supported models:
 
@@ -199,4 +199,4 @@ the upstream license texts are authoritative.
   (Magpie) and `nvcr.io/nvidia/pytorch:26.06-py3` (Qwen3-TTS), both multi-arch
 - A whisper-large-v3 STT endpoint for evaluation (`serving/run_whisper_judge.sh`);
   optionally a second judge (Voxtral-Mini-3B) for cross-validation
-- Model store at `~/hf_models/` populated by dgx-spark-core's `hf-sync`
+- Model store at `~/hf_models/` populated by southbyte-core's `hf-sync`

@@ -333,7 +333,7 @@ def index_page(runs: list[dict]) -> None:
             f'ASR-Modelle. Solche Fälle werden erkannt, einmal mit leichtem Sampling '
             f'wiederholt und ansonsten bei WER&nbsp;1.0 gekappt.</p>')
     body = f"""<h1>Deutscher TTS-Vergleich auf dem DGX Spark</h1>
-<p>{n["n_total"]} Testfälle (<a href="https://github.com/MvdB/dgx-spark-tts">Testset &amp; Eval-Code</a>),
+<p>{n["n_total"]} Testfälle (<a href="https://github.com/MvdB/southbyte-tts">Testset &amp; Eval-Code</a>),
 Judge: {html.escape(str(n.get("stt_model", "?")))} mit Casing-Prompt. Je Modell/Stimme wird der
 jeweils neueste vollständige Lauf gezeigt (Spalten nach WER sortiert, bester Wert je Zeile
 hervorgehoben; niedriger = besser). Die WER enthält auch STT-Fehler (obere Schranke des

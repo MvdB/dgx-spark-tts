@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-TTS serving and German-language evaluation on an NVIDIA DGX Spark (GB10, **aarch64** — many x86 wheels don't exist here; this drives most Dockerfile oddities). Part of a repo family: shared infra in `dgx-spark-core` (populates the model store at `~/hf_models/` via `hf-sync`), the vLLM/STT stack in `dgx-spark-vllm`.
+TTS serving and German-language evaluation on an NVIDIA DGX Spark (GB10, **aarch64** — many x86 wheels don't exist here; this drives most Dockerfile oddities). Part of a repo family: shared infra in `southbyte-core` (populates the model store at `~/hf_models/` via `hf-sync`), the vLLM/STT stack in `southbyte-vllm`.
 
 Code comments, docstrings, commit messages, and docs are written in **German** — keep that convention.
 
@@ -22,7 +22,7 @@ Four TTS model adapters, all exposing the **same OpenAI-compatible API** (`POST 
 
 Image layering matters: `Dockerfile.chatterbox` and `Dockerfile.voxcpm` build **FROM `spark-qwen3-tts:v1`** (it already contains NGC torch + source-built torchaudio); `Dockerfile.tn` builds FROM `spark-magpie-tts:v1` and adds German text normalization (pynini has no aarch64 wheel — prebuilt OpenFst/pynini artifacts are required in the build context, see its header). Without the `.tn` layer, Magpie's `apply_TN` is a **silent no-op**. Each derived Dockerfile ends its pip install with an import/CUDA guard (`torch.version.cuda`, torchaudio CUDA check, model import) — keep that when touching dependencies.
 
-Voxtral is different: no adapter of ours — vLLM-Omni serves `/v1/audio/speech` natively (`Dockerfile.voxtral`, FROM `vllm/vllm-openai:v0.25.1` + `vllm-omni==0.25.0rc1`; the stable 0.24.0 is **broken** for this model — it ignores the input text). Two hard-won platform facts in `serving/voxtral_tts_stages.yaml`: `enforce_eager` is required on GB10 (CUDA graphs corrupt the audio), and vllm/vllm-omni must match in minor version. The evaluator auto-detects native endpoints via `/v1/models` (sends `model` field, falls back to WAV-length timing).
+Voxtral is different: no adapter of ours — vLLM-Omni serves `/v1/audio/speech` natively (`Dockerfile.voxtral`, FROM `vllm/vllm-openai:v0.25.1` + `vllm-omni==0.25.0rc1`; the stable 0.24.0 is **broken** for this model — it ignores the input text). Two hard-won platform facts in `vllm-omni/voxtral_tts_stages.yaml` (now in the sibling repo [southbyte-spark-profiles](https://github.com/MvdB/southbyte-spark-profiles); `run_voxtral_tts.sh` mounts it via `$SPARK_PROFILES_DIR`): `enforce_eager` is required on GB10 (CUDA graphs corrupt the audio), and vllm/vllm-omni must match in minor version. The evaluator auto-detects native endpoints via `/v1/models` (sends `model` field, falls back to WAV-length timing).
 
 Models are mounted read-only from `~/hf_models` (`HF_MODELS_DIR`); no downloads at serve time (exception: Magpie fetches its NanoCodec vocoder from HF on first start).
 

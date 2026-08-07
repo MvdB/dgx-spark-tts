@@ -8,6 +8,9 @@ HOST_PORT="${HOST_PORT:-8005}"
 IMAGE="${IMAGE:-spark-voxtral-tts:v1}"
 MODEL_DIR="${MODEL_DIR:-mistralai--Voxtral-4B-TTS-2603}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# GB10-getunte Stage-Config liegt in southbyte-spark-profiles (überschreibbar).
+SPARK_PROFILES_DIR="${SPARK_PROFILES_DIR:-$HOME/southbyte/southbyte-spark-profiles}"
+STAGES_YAML="${SPARK_PROFILES_DIR}/vllm-omni/voxtral_tts_stages.yaml"
 
 if docker ps -a --format '{{.Names}}' | grep -qx "${CONTAINER_NAME}"; then
   echo "Container '${CONTAINER_NAME}' existiert -> wird entfernt."
@@ -19,7 +22,7 @@ docker run -d --name "${CONTAINER_NAME}" \
   --shm-size 8g \
   -p "${HOST_PORT}:8005" \
   -v "${HF_MODELS_DIR}:/hf_models:ro" \
-  -v "${SCRIPT_DIR}/voxtral_tts_stages.yaml:/config/voxtral_tts_stages.yaml:ro" \
+  -v "${STAGES_YAML}:/config/voxtral_tts_stages.yaml:ro" \
   "${IMAGE}" \
   "/hf_models/${MODEL_DIR}" \
   --omni \
