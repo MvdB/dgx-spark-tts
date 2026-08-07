@@ -199,4 +199,18 @@ the upstream license texts are authoritative.
   (Magpie) and `nvcr.io/nvidia/pytorch:26.06-py3` (Qwen3-TTS), both multi-arch
 - A whisper-large-v3 STT endpoint for evaluation (`serving/run_whisper_judge.sh`);
   optionally a second judge (Voxtral-Mini-3B) for cross-validation
-- Model store at `~/hf_models/` populated by southbyte-core's `hf-sync`
+- Model store at `~/hf_models/` populated by [southbyte-sync](https://github.com/MvdB/southbyte-sync)
+- GB10-tuned Voxtral stage config from [southbyte-spark-profiles](https://github.com/MvdB/southbyte-spark-profiles) (`vllm-omni/`)
+
+## Part of the southbyte family
+
+- [southbyte-core](https://github.com/MvdB/southbyte-core) — shared index
+- [southbyte-sync](https://github.com/MvdB/southbyte-sync) — HuggingFace collection mirror → local model store
+- [southbyte-vllm](https://github.com/MvdB/southbyte-vllm) — vLLM serving runner + LLM evaluation testplan
+- [southbyte-tts](https://github.com/MvdB/southbyte-tts) — TTS/STT serving + German-language evaluation *(this repo)*
+- [southbyte-spark-profiles](https://github.com/MvdB/southbyte-spark-profiles) — DGX Spark (GB10) validated profiles, kernels, benchmarks
+- **southbyte-image** *(planned)* — text-to-image serving + evaluation (diffusers)
+
+---
+
+Built by [southbyte](https://southbyte.de).
