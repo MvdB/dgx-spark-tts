@@ -2,40 +2,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Deutscher TTS-Vergleich (DGX Spark)</title>
 <style>
- body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 80rem;
-        padding: 0 1rem; color: #1a1a1a; background: #fff; }
- a { color: #1a6fb5; }
- h2 { border-bottom: 2px solid #ccc; padding-bottom: .3rem; margin-top: 2.5rem; }
- .tablewrap { overflow-x: auto; }
- table { border-collapse: collapse; margin: 1rem 0; }
- th, td { border: 1px solid #ccc; padding: .35rem .6rem; text-align: right; }
- th:first-child, td:first-child { text-align: left; }
- td.best { font-weight: 700; background: #eaf6ea; }
- .case { border: 1px solid #ddd; border-radius: 8px; padding: .8rem 1rem; margin: .8rem 0; }
- .case.bad { border-left: 6px solid #c0392b; }
- .case.mid { border-left: 6px solid #e67e22; }
- .case.good { border-left: 6px solid #27ae60; }
- .text { font-weight: 600; }
- .transcript { color: #555; font-style: italic; }
- .prompt { margin: .6rem 0; padding: .6rem .8rem; background: #f4f6f8;
-           border-left: 3px solid #1a6fb5; border-radius: 3px; }
- .prompt b { display: block; font-size: .85rem; text-transform: uppercase;
-             letter-spacing: .03em; color: #45596b; margin-bottom: .3rem; }
- .prompt code { font-size: .9rem; white-space: pre-wrap; word-break: break-word; }
- .meta { color: #777; font-size: .85rem; }
- footer { margin-top: 3rem; color: #777; font-size: .85rem;
-          border-top: 1px solid #ccc; padding-top: 1rem; }
- audio { height: 2rem; vertical-align: middle; margin: .2rem .4rem .2rem 0; }
- @media (prefers-color-scheme: dark) {
-   body { color: #ddd; background: #16181c; }
-   a { color: #6fb3e8; }
-   th, td, .case, h2, footer { border-color: #3a3f47; }
-   td.best { background: #1f3a24; }
-   .transcript { color: #aaa; }
-   .prompt { background: #1c2126; border-left-color: #4a9eda; }
-   .prompt b { color: #8fa6b8; }
- }
+ :root{--bg:#060C0A;--bg-raised:#0A1410;--bg-card:#0E1A14;--border:#162A1E;--border-hi:#1A5C38;
+   --green:#00E676;--green-dim:#00994A;--amber:#F59E0B;--text:#D4EDE0;--text-muted:#5E8A72;--text-dim:#2E5040;
+   --ko:#FF5A5A;--mono:'Courier New',Consolas,'Cascadia Code','SF Mono',Menlo,monospace;
+   --sans:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.7}
+ .grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+   background-image:linear-gradient(rgba(0,230,118,.15) 1px,transparent 1px),
+     linear-gradient(90deg,rgba(0,230,118,.15) 1px,transparent 1px);background-size:80px 80px}
+ .wrap{position:relative;z-index:1;max-width:80rem;margin:0 auto;padding:2.5rem 1.25rem}
+ .masthead .wordmark{font-family:var(--mono);font-weight:700;font-size:1.4rem;letter-spacing:1.4px;
+   color:var(--text);text-decoration:none}
+ .masthead .wordmark .dot{color:var(--green)}
+ .masthead .tagline{font-family:var(--mono);font-size:.68rem;letter-spacing:.25em;text-transform:uppercase;
+   color:var(--text-muted);margin-top:.3rem}
+ h1{font-family:var(--mono);color:var(--text);font-size:1.7rem;margin:1.4rem 0 .4rem}
+ h2{font-family:var(--mono);text-transform:uppercase;letter-spacing:.15em;color:var(--green);
+    border-top:1px solid var(--border-hi);padding-top:.6rem;margin-top:2.4rem}
+ a{color:var(--green)} a:hover{color:var(--green-dim)}
+ .tablewrap{overflow-x:auto}
+ table{border-collapse:collapse;margin:1rem 0}
+ th,td{border:1px solid var(--border);padding:.35rem .6rem;text-align:right}
+ th{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;
+   color:var(--text-muted);background:var(--bg-raised)}
+ th:first-child,td:first-child{text-align:left}
+ td.best{font-weight:700;color:var(--green);background:var(--bg-raised)}
+ .case{border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;margin:.8rem 0;background:var(--bg-card)}
+ .case.bad{border-left:6px solid var(--ko)} .case.mid{border-left:6px solid var(--amber)}
+ .case.good{border-left:6px solid var(--green)}
+ .text{font-weight:600;color:var(--text)}
+ .transcript{color:var(--text-muted);font-style:italic}
+ .prompt{margin:.6rem 0;padding:.6rem .8rem;background:var(--bg-raised);border-left:3px solid var(--green);border-radius:3px}
+ .prompt b{display:block;font-size:.85rem;text-transform:uppercase;letter-spacing:.03em;
+   color:var(--text-muted);margin-bottom:.3rem;font-family:var(--mono)}
+ .prompt code{font-size:.9rem;white-space:pre-wrap;word-break:break-word;color:var(--green)}
+ .meta{color:var(--text-muted);font-size:.85rem}
+ footer{margin-top:3rem;color:var(--text-muted);font-size:.85rem;border-top:1px solid var(--border);padding-top:1rem}
+ footer .wm{font-family:var(--mono);font-weight:700;letter-spacing:1px;color:var(--text)}
+ footer .wm .dot{color:var(--green)}
+ audio{height:2rem;vertical-align:middle;margin:.2rem .4rem .2rem 0}
 </style></head><body>
+<div class="grid-bg"></div><div class="wrap">
+<header class="masthead"><a class="wordmark" href="index.html">SOUTH<span class="dot">.</span>BYTE</a><div class="tagline">AI Governance &amp; IT-Beratung</div></header>
 <h1>Deutscher TTS-Vergleich auf dem DGX Spark</h1>
 <p>43 Testfälle (<a href="https://github.com/MvdB/southbyte-tts">Testset &amp; Eval-Code</a>),
 Judge: whisper-large-v3 mit Casing-Prompt. Je Modell/Stimme wird der
@@ -50,4 +59,5 @@ Spaltentitel führen zur Abhörseite mit allen Clips.</p>
 <div class="tablewrap"><table><tr><th>Metrik</th><th><a href="qwen3-tts-12hz-1-7b-customvoice-uncle-fu.html">Qwen3-TTS-12Hz-1.7B-CustomVoice · uncle_fu</a></th><th><a href="voxtral-4b-tts-2603-de-female.html">Voxtral-4B-TTS-2603 · de_female</a></th><th><a href="qwen3-tts-12hz-1-7b-voicedesign-de-male-young.html">Qwen3-TTS-12Hz-1.7B-VoiceDesign · de_male_young</a></th><th><a href="qwen3-tts-12hz-1-7b-voicedesign-de-female-coach.html">Qwen3-TTS-12Hz-1.7B-VoiceDesign · de_female_coach</a></th><th><a href="qwen3-tts-12hz-1-7b-voicedesign-de-male-news.html">Qwen3-TTS-12Hz-1.7B-VoiceDesign · de_male_news</a></th><th><a href="qwen3-tts-12hz-1-7b-voicedesign-de-female-news.html">Qwen3-TTS-12Hz-1.7B-VoiceDesign · de_female_news</a></th><th><a href="qwen3-tts-12hz-1-7b-voicedesign-de-male-coach.html">Qwen3-TTS-12Hz-1.7B-VoiceDesign · de_male_coach</a></th><th><a href="magpie-tts-multilingual-357m-nemo-tn-sofia.html">magpie_tts_multilingual_357m.nemo +TN · sofia</a></th><th><a href="qwen3-tts-12hz-1-7b-voicedesign-de-female-calm.html">Qwen3-TTS-12Hz-1.7B-VoiceDesign · de_female_calm</a></th><th><a href="voxcpm2-design.html">VoxCPM2 · design</a></th><th><a href="voxtral-4b-tts-2603-de-male.html">Voxtral-4B-TTS-2603 · de_male</a></th><th><a href="magpie-tts-multilingual-357m-nemo-sofia.html">magpie_tts_multilingual_357m.nemo · sofia</a></th><th><a href="qwen3-tts-12hz-1-7b-customvoice-aiden.html">Qwen3-TTS-12Hz-1.7B-CustomVoice · aiden</a></th><th><a href="chatterbox-default.html">chatterbox · default</a></th><th><a href="chatterbox-de-f1.html">chatterbox · de_f1</a></th><th><a href="qwen3-tts-12hz-1-7b-customvoice-serena.html">Qwen3-TTS-12Hz-1.7B-CustomVoice · serena</a></th></tr><tr><td>N (Wiederholungen)</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td></tr><tr><td>WER (Mittel, Cap 1.0)</td><td class="best">0.156</td><td class="">0.158</td><td class="">0.160</td><td class="">0.164</td><td class="">0.166</td><td class="">0.167</td><td class="">0.171</td><td class="">0.173</td><td class="">0.181</td><td class="">0.193</td><td class="">0.196</td><td class="">0.224</td><td class="">0.224</td><td class="">0.232</td><td class="">0.234</td><td class="">0.258</td></tr><tr><td>WER (Mittel, ungekappt)</td><td class="best">0.156</td><td class="">0.158</td><td class="">0.167</td><td class="">0.165</td><td class="">0.275</td><td class="">0.167</td><td class="">0.192</td><td class="">0.173</td><td class="">0.181</td><td class="">0.335</td><td class="">0.196</td><td class="">0.224</td><td class="">0.224</td><td class="">0.238</td><td class="">0.234</td><td class="">0.264</td></tr><tr><td>WER (best-of-N)</td><td class="">0.120</td><td class="">0.123</td><td class="">0.122</td><td class="">0.119</td><td class="best">0.117</td><td class="">0.124</td><td class="">0.123</td><td class="">0.151</td><td class="">0.140</td><td class="">0.140</td><td class="">0.131</td><td class="">0.200</td><td class="">0.148</td><td class="">0.173</td><td class="">0.165</td><td class="">0.177</td></tr><tr><td>CER (Cap 1.0)</td><td class="best">0.118</td><td class="">0.131</td><td class="">0.134</td><td class="">0.124</td><td class="">0.130</td><td class="">0.139</td><td class="">0.145</td><td class="">0.147</td><td class="">0.131</td><td class="">0.155</td><td class="">0.145</td><td class="">0.208</td><td class="">0.157</td><td class="">0.155</td><td class="">0.155</td><td class="">0.168</td></tr><tr><td>Realtime-Faktor</td><td class="">0.696</td><td class="">1.257</td><td class="">0.696</td><td class="">0.714</td><td class="">0.740</td><td class="">0.711</td><td class="">0.727</td><td class="">0.507</td><td class="">0.698</td><td class="">1.266</td><td class="">0.818</td><td class="best">0.361</td><td class="">0.693</td><td class="">1.817</td><td class="">0.803</td><td class="">0.708</td></tr><tr><td>WER compound</td><td class="">0.133</td><td class="">0.122</td><td class="best">0.067</td><td class="">0.089</td><td class="">0.100</td><td class="">0.144</td><td class="">0.122</td><td class="">0.089</td><td class="">0.144</td><td class="">0.133</td><td class="">0.122</td><td class="">0.111</td><td class="">0.256</td><td class="">0.200</td><td class="">0.156</td><td class="">0.356</td></tr><tr><td>WER loanword</td><td class="best">0.048</td><td class="">0.061</td><td class="">0.071</td><td class="">0.113</td><td class="">0.065</td><td class="">0.068</td><td class="best">0.048</td><td class="">0.089</td><td class="">0.068</td><td class="">0.081</td><td class="">0.114</td><td class="">0.103</td><td class="">0.192</td><td class="">0.081</td><td class="">0.080</td><td class="">0.207</td></tr><tr><td>WER longform</td><td class="best">0.037</td><td class="best">0.037</td><td class="best">0.037</td><td class="">0.057</td><td class="">0.046</td><td class="best">0.037</td><td class="">0.042</td><td class="">0.064</td><td class="">0.056</td><td class="">0.083</td><td class="">0.054</td><td class="">0.164</td><td class="">0.054</td><td class="">0.103</td><td class="">0.079</td><td class="">0.063</td></tr><tr><td>WER names</td><td class="">0.049</td><td class="best">0.037</td><td class="">0.049</td><td class="">0.062</td><td class="">0.074</td><td class="">0.049</td><td class="">0.198</td><td class="best">0.037</td><td class="">0.049</td><td class="">0.049</td><td class="">0.086</td><td class="">0.062</td><td class="">0.049</td><td class="">0.136</td><td class="">0.161</td><td class="">0.210</td></tr><tr><td>WER normalization</td><td class="best">0.285</td><td class="">0.292</td><td class="">0.314</td><td class="">0.297</td><td class="">0.303</td><td class="">0.309</td><td class="">0.286</td><td class="">0.320</td><td class="">0.318</td><td class="">0.349</td><td class="">0.336</td><td class="">0.409</td><td class="">0.322</td><td class="">0.383</td><td class="">0.407</td><td class="">0.339</td></tr><tr><td>WER umlaut</td><td class="">0.032</td><td class="">0.032</td><td class="">0.016</td><td class="">0.014</td><td class="">0.048</td><td class="best">0.006</td><td class="">0.071</td><td class="">0.038</td><td class="">0.068</td><td class="">0.043</td><td class="">0.078</td><td class="">0.022</td><td class="">0.133</td><td class="">0.096</td><td class="">0.085</td><td class="">0.122</td></tr><tr><td>Tempo (s/Zeichen, Median)</td><td>0.0841</td><td>0.0630</td><td>0.0875</td><td>0.0891</td><td>0.0921</td><td>0.0933</td><td>0.0921</td><td>0.0675</td><td>0.0887</td><td>0.0646</td><td>0.0590</td><td>0.0614</td><td>0.0733</td><td>0.0743</td><td>0.0759</td><td>0.0812</td></tr><tr><td>WER whisper-large-v3 (r0, refs+Text)</td><td class="">0.098</td><td class="best">0.094</td><td class="">0.116</td><td class="">0.142</td><td class="">0.146</td><td class="">0.124</td><td class="">0.123</td><td class="">0.096</td><td class="">0.124</td><td class="">0.122</td><td class="">0.143</td><td class="">0.198</td><td class="">0.186</td><td class="">0.193</td><td class="">0.198</td><td class="">0.231</td></tr><tr><td>WER voxtral-mini-3b (r0, refs+Text)</td><td class="">0.089</td><td class="">0.073</td><td class="">0.121</td><td class="">0.093</td><td class="">0.097</td><td class="">0.099</td><td class="best">0.064</td><td class="">0.077</td><td class="">0.066</td><td class="">0.106</td><td class="">0.095</td><td class="">0.172</td><td class="">0.217</td><td class="">0.157</td><td class="">0.178</td><td class="">0.181</td></tr></table></div>
 <h2>Lizenzhinweise</h2>
 <ul><li><b>Qwen3-TTS-12Hz-1.7B-CustomVoice · uncle_fu</b>: Apache-2.0</li><li><b>Voxtral-4B-TTS-2603 · de_female</b>: CC BY-NC 4.0 (nicht-kommerziell)</li><li><b>Qwen3-TTS-12Hz-1.7B-VoiceDesign · de_male_young</b>: Apache-2.0</li><li><b>Qwen3-TTS-12Hz-1.7B-VoiceDesign · de_female_coach</b>: Apache-2.0</li><li><b>Qwen3-TTS-12Hz-1.7B-VoiceDesign · de_male_news</b>: Apache-2.0</li><li><b>Qwen3-TTS-12Hz-1.7B-VoiceDesign · de_female_news</b>: Apache-2.0</li><li><b>Qwen3-TTS-12Hz-1.7B-VoiceDesign · de_male_coach</b>: Apache-2.0</li><li><b>magpie_tts_multilingual_357m.nemo +TN · sofia</b>: NVIDIA Open Model License</li><li><b>Qwen3-TTS-12Hz-1.7B-VoiceDesign · de_female_calm</b>: Apache-2.0</li><li><b>VoxCPM2 · design</b>: Apache-2.0</li><li><b>Voxtral-4B-TTS-2603 · de_male</b>: CC BY-NC 4.0 (nicht-kommerziell)</li><li><b>magpie_tts_multilingual_357m.nemo · sofia</b>: NVIDIA Open Model License</li><li><b>Qwen3-TTS-12Hz-1.7B-CustomVoice · aiden</b>: Apache-2.0</li><li><b>chatterbox · default</b>: MIT (Audio enthält Perth-Wasserzeichen)</li><li><b>chatterbox · de_f1</b>: MIT (Audio enthält Perth-Wasserzeichen)</li><li><b>Qwen3-TTS-12Hz-1.7B-CustomVoice · serena</b>: Apache-2.0</li></ul>
-<footer>Alle Clips sind KI-generiert (synthetische Sprache). Die Lizenzangaben sind Hinweise auf die jeweiligen Modell-Lizenzen, keine Rechtsberatung — verbindlich sind allein die Lizenztexte der Modellanbieter.</footer></body></html>
+<footer><span class="wm">SOUTH<span class="dot">.</span>BYTE</span> · Alle Clips sind KI-generiert (synthetische Sprache). Die Lizenzangaben sind Hinweise auf die jeweiligen Modell-Lizenzen, keine Rechtsberatung — verbindlich sind allein die Lizenztexte der Modellanbieter. · <a href="https://southbyte.de">southbyte.de</a></footer>
+</div></body></html>

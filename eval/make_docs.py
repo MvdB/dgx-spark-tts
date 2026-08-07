@@ -56,48 +56,65 @@ DISCLAIMER = (
     "verbindlich sind allein die Lizenztexte der Modellanbieter."
 )
 
+# SouthByte Web-CI (southbyte-brand skill, references/web-ci.md + colors.md):
+# Dark-Theme, Matrix-Grid, Wortmarke SOUTH.BYTE, Mono-Überschriften in Grün.
 CSS = """
- body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 80rem;
-        padding: 0 1rem; color: #1a1a1a; background: #fff; }
- a { color: #1a6fb5; }
- h2 { border-bottom: 2px solid #ccc; padding-bottom: .3rem; margin-top: 2.5rem; }
- .tablewrap { overflow-x: auto; }
- table { border-collapse: collapse; margin: 1rem 0; }
- th, td { border: 1px solid #ccc; padding: .35rem .6rem; text-align: right; }
- th:first-child, td:first-child { text-align: left; }
- td.best { font-weight: 700; background: #eaf6ea; }
- .case { border: 1px solid #ddd; border-radius: 8px; padding: .8rem 1rem; margin: .8rem 0; }
- .case.bad { border-left: 6px solid #c0392b; }
- .case.mid { border-left: 6px solid #e67e22; }
- .case.good { border-left: 6px solid #27ae60; }
- .text { font-weight: 600; }
- .transcript { color: #555; font-style: italic; }
- .prompt { margin: .6rem 0; padding: .6rem .8rem; background: #f4f6f8;
-           border-left: 3px solid #1a6fb5; border-radius: 3px; }
- .prompt b { display: block; font-size: .85rem; text-transform: uppercase;
-             letter-spacing: .03em; color: #45596b; margin-bottom: .3rem; }
- .prompt code { font-size: .9rem; white-space: pre-wrap; word-break: break-word; }
- .meta { color: #777; font-size: .85rem; }
- footer { margin-top: 3rem; color: #777; font-size: .85rem;
-          border-top: 1px solid #ccc; padding-top: 1rem; }
- audio { height: 2rem; vertical-align: middle; margin: .2rem .4rem .2rem 0; }
- @media (prefers-color-scheme: dark) {
-   body { color: #ddd; background: #16181c; }
-   a { color: #6fb3e8; }
-   th, td, .case, h2, footer { border-color: #3a3f47; }
-   td.best { background: #1f3a24; }
-   .transcript { color: #aaa; }
-   .prompt { background: #1c2126; border-left-color: #4a9eda; }
-   .prompt b { color: #8fa6b8; }
- }
+ :root{--bg:#060C0A;--bg-raised:#0A1410;--bg-card:#0E1A14;--border:#162A1E;--border-hi:#1A5C38;
+   --green:#00E676;--green-dim:#00994A;--amber:#F59E0B;--text:#D4EDE0;--text-muted:#5E8A72;--text-dim:#2E5040;
+   --ko:#FF5A5A;--mono:'Courier New',Consolas,'Cascadia Code','SF Mono',Menlo,monospace;
+   --sans:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.7}
+ .grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+   background-image:linear-gradient(rgba(0,230,118,.15) 1px,transparent 1px),
+     linear-gradient(90deg,rgba(0,230,118,.15) 1px,transparent 1px);background-size:80px 80px}
+ .wrap{position:relative;z-index:1;max-width:80rem;margin:0 auto;padding:2.5rem 1.25rem}
+ .masthead .wordmark{font-family:var(--mono);font-weight:700;font-size:1.4rem;letter-spacing:1.4px;
+   color:var(--text);text-decoration:none}
+ .masthead .wordmark .dot{color:var(--green)}
+ .masthead .tagline{font-family:var(--mono);font-size:.68rem;letter-spacing:.25em;text-transform:uppercase;
+   color:var(--text-muted);margin-top:.3rem}
+ h1{font-family:var(--mono);color:var(--text);font-size:1.7rem;margin:1.4rem 0 .4rem}
+ h2{font-family:var(--mono);text-transform:uppercase;letter-spacing:.15em;color:var(--green);
+    border-top:1px solid var(--border-hi);padding-top:.6rem;margin-top:2.4rem}
+ a{color:var(--green)} a:hover{color:var(--green-dim)}
+ .tablewrap{overflow-x:auto}
+ table{border-collapse:collapse;margin:1rem 0}
+ th,td{border:1px solid var(--border);padding:.35rem .6rem;text-align:right}
+ th{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;
+   color:var(--text-muted);background:var(--bg-raised)}
+ th:first-child,td:first-child{text-align:left}
+ td.best{font-weight:700;color:var(--green);background:var(--bg-raised)}
+ .case{border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;margin:.8rem 0;background:var(--bg-card)}
+ .case.bad{border-left:6px solid var(--ko)} .case.mid{border-left:6px solid var(--amber)}
+ .case.good{border-left:6px solid var(--green)}
+ .text{font-weight:600;color:var(--text)}
+ .transcript{color:var(--text-muted);font-style:italic}
+ .prompt{margin:.6rem 0;padding:.6rem .8rem;background:var(--bg-raised);border-left:3px solid var(--green);border-radius:3px}
+ .prompt b{display:block;font-size:.85rem;text-transform:uppercase;letter-spacing:.03em;
+   color:var(--text-muted);margin-bottom:.3rem;font-family:var(--mono)}
+ .prompt code{font-size:.9rem;white-space:pre-wrap;word-break:break-word;color:var(--green)}
+ .meta{color:var(--text-muted);font-size:.85rem}
+ footer{margin-top:3rem;color:var(--text-muted);font-size:.85rem;border-top:1px solid var(--border);padding-top:1rem}
+ footer .wm{font-family:var(--mono);font-weight:700;letter-spacing:1px;color:var(--text)}
+ footer .wm .dot{color:var(--green)}
+ audio{height:2rem;vertical-align:middle;margin:.2rem .4rem .2rem 0}
 """
+
+_MASTHEAD = ('<header class="masthead"><a class="wordmark" href="index.html">'
+             'SOUTH<span class="dot">.</span>BYTE</a>'
+             '<div class="tagline">AI Governance &amp; IT-Beratung</div></header>')
 
 
 def page(title: str, body: str) -> str:
+    foot = (f'<footer><span class="wm">SOUTH<span class="dot">.</span>BYTE</span> · '
+            f'{html.escape(DISCLAIMER)} · '
+            f'<a href="https://southbyte.de">southbyte.de</a></footer>')
     return (f'<!doctype html><html lang="de"><head><meta charset="utf-8">\n'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">\n'
             f"<title>{html.escape(title)}</title>\n<style>{CSS}</style></head><body>\n"
-            f"{body}\n<footer>{html.escape(DISCLAIMER)}</footer></body></html>")
+            f'<div class="grid-bg"></div><div class="wrap">\n{_MASTHEAD}\n'
+            f"{body}\n{foot}\n</div></body></html>")
 
 
 def model_display(tts_model: str) -> str:
